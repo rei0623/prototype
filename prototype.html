@@ -3,453 +3,2055 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wireframe & Note Generator Prototype</title>
-    <!-- html2canvasライブラリをCDNから読み込み -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Visual Web Assembler v4</title>
     <style>
-        /* --- 全体レイアウト --- */
+        :root {
+            --primary-color: #3f51b5; --secondary-color: #ff9800; --bg-color: #f0f2f5; --pane-bg: #ffffff; --border-color: #dcdcdc;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: #333; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
-        h1 {
-            text-align: center;
-            color: #1a237e;
+        header {
+            padding: 10px 20px; background: var(--pane-bg); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
-        .container {
-            display: flex;
-            gap: 20px;
-            height: 75vh;
-            margin-bottom: 20px;
+        h1 { font-size: 1.5em; margin: 0; color: var(--primary-color); }
+        .header-controls button {
+            padding: 8px 12px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 5px; margin-left: 5px;
         }
+        .header-controls button:disabled { cursor: not-allowed; opacity: 0.5; }
+        .main-container { display: flex; flex-grow: 1; overflow: hidden; }
         .pane {
-            border: 1px solid #dcdcdc;
-            border-radius: 8px;
+            border-left: 1px solid var(--border-color); background-color: var(--pane-bg); display: flex; flex-direction: column;
+        }
+        #left-pane { width: 250px; overflow-y: auto; }
+        #right-pane { width: 300px; }
+        .pane-header { margin: 0; padding: 15px; border-bottom: 1px solid #eee; background: #f8f9fa; font-size: 1em; font-weight: 600; color: var(--primary-color); }
+        .pane-content { padding: 15px; overflow-y: auto; }
+        .part, .component-item {
+            border: 2px dashed var(--primary-color); padding: 12px; margin-bottom: 10px; border-radius: 5px; cursor: grab; background-color: #e3f2fd; text-align: center; font-weight: bold; color: #0d47a1;
+        }
+        .component-item { border-style: solid; border-color: var(--secondary-color); background-color: #fff3e0; color: #e65100; }
+        
+        /* 中央キャンバス */
+        #canvas-wrapper {
+            flex-grow: 1;
+            background: #e9ebee;
             padding: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-        h3 {
-            margin-top: 0;
-            border-bottom: 2px solid #3f51b5;
-            padding-bottom: 10px;
-            color: #3f51b5;
-        }
-
-        /* --- ① パーツライブラリ --- */
-        #parts-library {
-            flex-basis: 20%;
-        }
-        .part {
-            border: 2px dashed #007bff;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 5px;
+            overflow: auto;
+            position: relative;
             cursor: grab;
-            background-color: #e3f2fd;
-            text-align: center;
-            font-weight: bold;
-            color: #0d47a1;
-            transition: background-color 0.2s;
         }
-        .part:hover {
-            background-color: #bbdefb;
-        }
-        .part:active {
+        #canvas-wrapper.grabbing {
             cursor: grabbing;
         }
-
-        /* --- ② レイアウトキャンバス --- */
+        #canvas-wrapper.dragging {
+            user-select: none;
+        }
         #canvas {
-            flex-basis: 50%;
-            overflow-y: auto;
-            background-color: #fafafa;
-            padding: 10px; /* 内側の余白 */
-        }
-        .canvas-item {
-            border: 2px solid #4caf50;
-            padding: 20px;
-            margin: 10px;
-            border-radius: 5px;
-            background-color: white;
             position: relative;
-            cursor: pointer;
-            transition: box-shadow 0.2s, border-color 0.2s;
+            background-color: #ffffff;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-width: 3000px;
+            min-height: 3000px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transform-origin: 0 0;
         }
-        .canvas-item.selected {
-            border-color: #ff9800;
-            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        
+        /* キャンバス上のアイテム */
+        .canvas-item {
+            position: absolute; border: 1px solid #999; box-sizing: border-box; cursor: move; display: flex; flex-direction: column; user-select: none;
         }
-        .item-header {
-            font-weight: bold;
-            color: #1b5e20;
-            margin-bottom: 5px;
+        .canvas-item.selected { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+        .item-content { flex-grow: 1; overflow: hidden; padding: 10px; pointer-events: none; /* クリックイベントが親にいくように */ }
+        
+        /* 複数選択時のバウンディングボックスとリサイズハンドル */
+        #selection-box {
+            position: absolute; border: 2px solid var(--secondary-color); pointer-events: none; z-index: 10000;
         }
-        .item-id {
-            font-size: 0.8em;
-            color: #757575;
+        .resizer {
+            position: absolute; width: 10px; height: 10px; background: var(--secondary-color); border: 1px solid white; border-radius: 50%; pointer-events: all;
         }
-        .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            line-height: 20px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .canvas-item:hover .delete-btn {
-            opacity: 1;
-        }
-        .drag-over {
-            border: 2px dashed #ff9800;
-            background-color: #fff9c4;
+        .resizer.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
+        .resizer.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
+        .resizer.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
+        .resizer.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+        
+        /* ラバーバンド選択 */
+        #rubber-band {
+            position: absolute; background: rgba(63, 81, 181, 0.3); border: 1px solid var(--primary-color); z-index: 9999;
         }
 
-
-        /* --- ③ インスペクター＆メモ帳 --- */
-        #inspector {
-            flex-basis: 30%;
-        }
-        #inspector-content {
-            flex-grow: 1;
+        /* インスペクター */
+        #inspector-content .prop-group { margin-bottom: 15px; }
+        #inspector-content .prop-group h5 { margin: 0 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        #inspector-content .prop-item {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
         }
-        #inspector-placeholder {
-            color: #999;
-            margin: auto;
-            text-align: center;
+        #inspector-content .prop-item > div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-        #note-textarea {
-            width: 100%;
-            height: 100%; /* 親要素の高さを埋める */
-            box-sizing: border-box; /* padding, borderをwidth/heightに含める */
-            border-radius: 5px;
+        #inspector-content .prop-item input[type="number"],
+        #inspector-content .prop-item input[type="text"],
+        #inspector-content .prop-item textarea {
+            width: 60%;
+            box-sizing: border-box;
+            padding: 5px;
             border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 16px;
+            border-radius: 3px;
+        }
+        #inspector-content .prop-item select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background-color: white;
+        }
+        #inspector-content .prop-item textarea {
+            min-height: 60px;
             resize: vertical;
         }
+        #inspector-content .prop-item input[type="color"] {
+            width: 40px;
+            height: 24px;
+            padding: 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
 
-        /* --- ボタンエリア --- */
-        .button-area {
-            text-align: center;
+        #inline-editor {
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            overflow: hidden;
         }
-        .action-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
+        #inline-editor:focus {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        /* --- レイヤーパネル --- */
+        #layer-list { padding: 0; }
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-bottom: 1px solid #eee;
             cursor: pointer;
+            background-color: white;
+            user-select: none;
+        }
+        .layer-item:hover { background-color: #f0f2f5; }
+        .layer-item.selected { background-color: #e3f2fd; font-weight: bold; }
+        .layer-item.hidden-item .layer-name { text-decoration: line-through; color: #999; }
+        .layer-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .layer-controls { display: flex; gap: 8px; }
+        .layer-controls button {
+            background: none; border: none; cursor: pointer; font-size: 16px; color: #777;
+        }
+        .layer-controls button.active { color: var(--primary-color); }
+        .header-controls-label-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+        .header-controls-label-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .asset-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: grab;
+            background: white;
+        }
+
+        .asset-item:hover {
+            background: #f5f5f5;
+        }
+
+        .asset-item img {
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .asset-item span {
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .upload-btn:hover {
+            background: #303f9f;
+        }
+
+        .canvas-item.artboard {
+            border: 1px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-clip: padding-box;
+            position: relative;
+        }
+        .artboard-title {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .artboard-page-number {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .artboard-device-type {
+            color: #666;
+            font-size: 12px;
+        }
+
+        #context-menu {
+            position: absolute;
+            display: none;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 5px 0;
+            z-index: 10002;
+            min-width: 150px;
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .context-menu-item hr {
+            margin: 5px 0;
+            border: none;
+            border-top: 1px solid #eee;
+        }
+
+        #canvas-size-indicator {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* テンプレート選択モーダル */
+        #template-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #template-modal .template-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .template-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+        .template-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .template-card .template-preview {
+            height: 150px;
+            background-color: #f5f5f5;
+        }
+        .template-card .template-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .template-card h4 {
+            margin: 0;
+            padding: 15px;
             font-size: 16px;
-            margin: 0 10px;
-            transition: background-color 0.2s;
-        }
-        .action-button:hover {
-            background-color: #45a049;
-        }
-        #screenshot-btn {
-            background-color: #2196F3;
-        }
-        #screenshot-btn:hover {
-            background-color: #1e88e5;
         }
     </style>
 </head>
 <body>
-
-    <h1>Wireframe & Note Generator</h1>
-
-    <div class="container">
-        <!-- ① パーツライブラリ -->
-        <div id="parts-library" class="pane">
-            <h3>パーツライブラリ</h3>
-            <div class="part" draggable="true" data-type="ヘッダー">ヘッダー</div>
-            <div class="part" draggable="true" data-type="ヒーローセクション">ヒーローセクション</div>
-            <div class="part" draggable="true" data-type="テキストブロック">テキストブロック</div>
-            <div class="part" draggable="true" data-type="画像">画像</div>
-            <div class="part" draggable="true" data-type="ボタン">ボタン</div>
-            <div class="part" draggable="true" data-type="2カラム">2カラム</div>
-            <div class="part" draggable="true" data-type="カードリスト">カードリスト</div>
-            <div class="part" draggable="true" data-type="フッター">フッター</div>
-        </div>
-
-        <!-- ② レイアウトキャンバス -->
-        <div id="canvas" class="pane">
-            <!-- ここにパーツがドラッグ＆ドロップされる -->
-        </div>
-
-        <!-- ③ インスペクター＆メモ帳 -->
-        <div id="inspector" class="pane">
-            <h3>指示メモ</h3>
-            <div id="inspector-content">
-                <div id="inspector-placeholder">キャンバス上のパーツを選択してください</div>
-                <!-- 選択されたパーツの情報がここに表示される -->
+    <!-- テンプレート選択モーダル -->
+    <div id="template-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; width: 80%; max-width: 900px;">
+            <h2 style="margin-top: 0;">テンプレートを選択、または新規プロジェクトを開始</h2>
+            <div id="template-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <!-- テンプレートはJSでここに挿入 -->
+                <div class="template-card" data-template-path="blank">
+                    <div class="template-preview" style="background: #e9ebee; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 48px; color: #ccc;">+</span>
+                    </div>
+                    <h4>白紙から開始</h4>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="button-area">
-        <button id="export-btn" class="action-button">JSONをエクスポート</button>
-        <button id="screenshot-btn" class="action-button">スクリーンショット撮影</button>
+    <!-- HTML構造はv3からほぼ変更なし -->
+    <header>
+        <h1>Visual Web Assembler v4</h1>
+        <div class="header-controls">
+            <button id="save-project-btn">💾 Save</button>
+            <label for="load-project-input" class="header-controls-label-btn">📂 Load</label>
+            <input type="file" id="load-project-input" style="display: none;">
+            <button id="undo-btn" disabled>↩️ Undo</button>
+            <button id="redo-btn" disabled>↪️ Redo</button>
+            <button id="export-btn">Export JSON</button>
+        </div>
+    </header>
+    <main class="main-container">
+        <div id="left-pane" class="pane">
+            <div id="parts-library">
+                <h3 class="pane-header">Standard Parts</h3>
+                <div class="pane-content">
+                    <div class="part" draggable="true" data-type="アートボード" data-device="desktop">PC アートボード</div>
+                    <div class="part" draggable="true" data-type="アートボード" data-device="mobile">スマホ アートボード</div>
+                    <div class="part" draggable="true" data-type="テキスト">テキスト</div>
+            <div class="part" draggable="true" data-type="画像">画像</div>
+                    <div class="part" draggable="true" data-type="コンテナ">コンテナ</div>
+            <div class="part" draggable="true" data-type="ボタン">ボタン</div>
+        </div>
+        </div>
+            <div id="component-library">
+                <h3 class="pane-header">Custom Components</h3>
+                <div id="component-list" class="pane-content"></div>
+            </div>
+            <div id="asset-library">
+                <h3 class="pane-header">Assets</h3>
+                <div id="asset-list" class="pane-content">
+                    <!-- アセットがここに表示される -->
+        </div>
+                <div style="padding: 15px;">
+                    <label for="upload-asset-input" class="upload-btn">Upload Image</label>
+                    <input type="file" id="upload-asset-input" accept="image/*" style="display: none;">
     </div>
+    </div>
+        </div>
+        <div id="canvas-wrapper">
+            <div id="canvas"></div>
+            <div id="canvas-size-indicator"></div>
+        </div>
+        <div id="right-pane" class="pane" style="display: flex; flex-direction: column;">
+            <div id="layer-panel" style="height: 40%; display: flex; flex-direction: column;">
+                <h3 class="pane-header">Layers</h3>
+                <div id="layer-list" class="pane-content" style="flex-grow: 1;">
+                    <!-- レイヤーアイテムがここに追加される -->
+                </div>
+            </div>
+            <div id="inspector-wrapper" style="height: 60%; display: flex; flex-direction: column;">
+                <h3 class="pane-header">Inspector</h3>
+                <div id="inspector-content" class="pane-content" style="flex-grow: 1;">
+                    <div id="inspector-placeholder">Select an item on the canvas.</div>
+                </div>
+            </div>
+        </div>
+        <div id="context-menu"></div>
+    </main>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM要素の取得 ---
-    const parts = document.querySelectorAll('.part');
+    // --- テンプレート定義 ---
+    const TEMPLATES = [
+        {
+            name: 'コーポレートサイト',
+            data: {
+                "items": {
+                    "item-1": {
+                        "id": "item-1",
+                        "type": "アートボード",
+                        "parentId": null,
+                        "children": ["item-2", "item-3", "item-4", "item-5", "item-6", "item-7"],
+                        "isArtboard": true,
+                        "artboardId": null,
+                        "deviceType": "desktop",
+                        "pageNumber": 1,
+                        "properties": {
+                            "desktop": {
+                                "x": 100,
+                                "y": 100,
+                                "width": 960,
+                                "height": 600,
+                                "zIndex": 0,
+                                "visible": true,
+                                "backgroundColor": "#FFFFFF",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "トップページ"
+                    },
+                    "item-2": {
+                        "id": "item-2",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 0,
+                                "width": 960,
+                                "height": 80,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#3f51b5",
+                                "color": "#FFFFFF",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "ヘッダー"
+                    },
+                    "item-3": {
+                        "id": "item-3",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 80,
+                                "width": 960,
+                                "height": 400,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#e3f2fd",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "ヒーローセクション"
+                    },
+                    "item-4": {
+                        "id": "item-4",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 480,
+                                "width": 960,
+                                "height": 300,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#FFFFFF",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "特徴セクション"
+                    },
+                    "item-5": {
+                        "id": "item-5",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 780,
+                                "width": 960,
+                                "height": 200,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#f5f5f5",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "お知らせセクション"
+                    },
+                    "item-6": {
+                        "id": "item-6",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 980,
+                                "width": 960,
+                                "height": 100,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#333333",
+                                "color": "#FFFFFF",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "フッター"
+                    },
+                    "item-7": {
+                        "id": "item-7",
+                        "type": "テキスト",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 20,
+                                "y": 20,
+                                "width": 200,
+                                "height": 40,
+                                "zIndex": 2,
+                                "visible": true,
+                                "backgroundColor": "transparent",
+                                "color": "#FFFFFF",
+                                "fontSize": 24,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "会社名"
+                    }
+                },
+                "customComponents": {},
+                "nextId": 8,
+                "selectedItemIds": [],
+                "currentView": "desktop",
+                "camera": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                },
+                "assets": {},
+                "nextAssetId": 1
+            }
+        },
+        {
+            name: 'ポートフォリオ',
+            data: {
+                "items": {
+                    "item-1": {
+                        "id": "item-1",
+                        "type": "アートボード",
+                        "parentId": null,
+                        "children": ["item-2", "item-3", "item-4", "item-5"],
+                        "isArtboard": true,
+                        "artboardId": null,
+                        "deviceType": "desktop",
+                        "pageNumber": 1,
+                        "properties": {
+                            "desktop": {
+                                "x": 100,
+                                "y": 100,
+                                "width": 960,
+                                "height": 800,
+                                "zIndex": 0,
+                                "visible": true,
+                                "backgroundColor": "#FFFFFF",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "ポートフォリオ"
+                    },
+                    "item-2": {
+                        "id": "item-2",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 0,
+                                "width": 960,
+                                "height": 80,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#212121",
+                                "color": "#FFFFFF",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "ヘッダー"
+                    },
+                    "item-3": {
+                        "id": "item-3",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 80,
+                                "width": 960,
+                                "height": 400,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#fafafa",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "作品グリッド"
+                    },
+                    "item-4": {
+                        "id": "item-4",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 480,
+                                "width": 960,
+                                "height": 300,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#FFFFFF",
+                                "color": "#000000",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "プロフィール"
+                    },
+                    "item-5": {
+                        "id": "item-5",
+                        "type": "コンテナ",
+                        "parentId": "item-1",
+                        "children": [],
+                        "properties": {
+                            "desktop": {
+                                "x": 0,
+                                "y": 780,
+                                "width": 960,
+                                "height": 100,
+                                "zIndex": 1,
+                                "visible": true,
+                                "backgroundColor": "#212121",
+                                "color": "#FFFFFF",
+                                "fontSize": 16,
+                                "borderRadius": 0
+                            }
+                        },
+                        "locked": false,
+                        "content": "フッター"
+                    }
+                },
+                "customComponents": {},
+                "nextId": 6,
+                "selectedItemIds": [],
+                "currentView": "desktop",
+                "camera": {
+                    "x": 0,
+                    "y": 0,
+                    "zoom": 1
+                },
+                "assets": {},
+                "nextAssetId": 1
+            }
+        }
+    ];
+
+    // --- DOM要素 ---
     const canvas = document.getElementById('canvas');
     const inspectorContent = document.getElementById('inspector-content');
-    const inspectorPlaceholder = document.getElementById('inspector-placeholder');
-    const exportBtn = document.getElementById('export-btn');
-    const screenshotBtn = document.getElementById('screenshot-btn');
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+    const templateModal = document.getElementById('template-modal');
+    const templateOptionsContainer = document.getElementById('template-options');
 
-    // --- 状態管理オブジェクト ---
-    let websiteState = {
-        structure: [],
-        notes: {}
+    // モーダルにテンプレートの選択肢を生成
+    TEMPLATES.forEach(template => {
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.dataset.templateIndex = TEMPLATES.indexOf(template);
+        
+        card.innerHTML = `
+            <div class="template-preview" style="background: #e9ebee; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 24px; color: #666;">${template.name}</span>
+            </div>
+            <h4>${template.name}</h4>
+        `;
+        templateOptionsContainer.appendChild(card);
+    });
+
+    // テンプレートカードのクリックイベント
+    templateOptionsContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('.template-card');
+        if (!card) return;
+
+        const templateIndex = card.dataset.templateIndex;
+
+        if (templateIndex === undefined) {
+            // 「白紙から開始」が選ばれたら、モーダルを閉じるだけ
+            templateModal.style.display = 'none';
+        } else {
+            // テンプレートデータを直接使用
+            const templateData = JSON.stringify(TEMPLATES[templateIndex].data);
+            history = [templateData];
+            historyIndex = 0;
+            loadState(templateData);
+            
+            templateModal.style.display = 'none';
+            alert(`「${card.querySelector('h4').textContent}」テンプレートを読み込みました。`);
+        }
+    });
+
+    // --- 状態管理 ---
+    let state = {
+        items: {},
+        customComponents: {},
+        nextId: 1,
+        selectedItemIds: [],
+        currentView: 'desktop',
+        camera: {
+            x: 0,
+            y: 0,
+            zoom: 1,
+        },
+        assets: {},
+        nextAssetId: 1,
     };
-    let nextId = 1;
-    let selectedItemId = null;
-    let draggedItem = null;
-
-    // --- ドラッグ＆ドロップのイベントリスナー ---
-    parts.forEach(part => {
-        part.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', e.target.dataset.type);
-            e.dataTransfer.effectAllowed = 'copy';
-        });
-    });
-
-    canvas.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        canvas.classList.add('drag-over');
-    });
-
-    canvas.addEventListener('dragleave', () => {
-        canvas.classList.remove('drag-over');
-    });
-
-    canvas.addEventListener('drop', (e) => {
-        e.preventDefault();
-        canvas.classList.remove('drag-over');
-        const type = e.dataTransfer.getData('text/plain');
-        if (type) {
-            addPartToCanvas(type);
-        }
-    });
-
-    // --- キャンバス内の並べ替え用ドラッグ＆ドロップ ---
-    canvas.addEventListener('dragstart', (e) => {
-        if (e.target.classList.contains('canvas-item')) {
-            draggedItem = e.target;
-            e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => e.target.style.opacity = '0.5', 0);
-        }
-    });
-
-    canvas.addEventListener('dragend', (e) => {
-        if (draggedItem) {
-            draggedItem.style.opacity = '1';
-            draggedItem = null;
-
-            // DOMの順番に基づいてstructureを更新
-            const newStructure = [];
-            document.querySelectorAll('.canvas-item').forEach(itemEl => {
-                const id = itemEl.dataset.id;
-                const part = websiteState.structure.find(p => p.id === id);
-                if(part) newStructure.push(part);
-            });
-            websiteState.structure = newStructure;
-        }
-    });
-
-    canvas.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const target = e.target.closest('.canvas-item');
-        if (target && draggedItem && target !== draggedItem) {
-            const rect = target.getBoundingClientRect();
-            const isAfter = e.clientY > rect.top + rect.height / 2;
-            if (isAfter) {
-                target.parentNode.insertBefore(draggedItem, target.nextSibling);
-            } else {
-                target.parentNode.insertBefore(draggedItem, target);
-            }
-        }
-    });
-
-
-    // --- 機能関数 ---
-    function addPartToCanvas(type) {
-        const id = `part-${nextId++}`;
-        const newPart = { id, type };
-        
-        websiteState.structure.push(newPart);
-        websiteState.notes[id] = ""; // メモを初期化
-
-        renderCanvas();
-        selectItem(id); // 追加したパーツを自動で選択
-    }
-
-    function deletePart(id) {
-        websiteState.structure = websiteState.structure.filter(p => p.id !== id);
-        delete websiteState.notes[id];
-        
-        if (selectedItemId === id) {
-            selectedItemId = null;
-            clearInspector();
-        }
-        renderCanvas();
-    }
+    let clipboard = []; // コピペ用
     
-    function renderCanvas() {
+    // --- ヘルパー関数 ---
+    function getItemProperty(id, propName) {
+        const item = state.items[id];
+        if (!item) return null;
+
+        // 現在のビューのプロパティを優先
+        if (item.properties[state.currentView] && typeof item.properties[state.currentView][propName] !== 'undefined') {
+            return item.properties[state.currentView][propName];
+        }
+        // なければデスクトップのプロパティをフォールバックとして使用
+        if (item.properties.desktop && typeof item.properties.desktop[propName] !== 'undefined') {
+            return item.properties.desktop[propName];
+        }
+        // 共通プロパティ（content, lockedなど）
+        if (typeof item[propName] !== 'undefined') {
+            return item[propName];
+        }
+        return null; // 見つからない場合
+    }
+
+    function setItemProperty(id, propName, value) {
+        const item = state.items[id];
+        if (!item) return;
+        
+        // 共通プロパティの更新
+        const commonProps = ['locked', 'content', 'parentId', 'children'];
+        if (commonProps.includes(propName)) {
+            item[propName] = value;
+            return;
+        }
+
+        // 現在のビュー用のプロパティオブジェクトがなければ作成
+        if (!item.properties[state.currentView]) {
+            item.properties[state.currentView] = {};
+        }
+        item.properties[state.currentView][propName] = value;
+    }
+
+    // --- Undo/Redo機能 (v3から変更なし) ---
+    let history = [JSON.stringify(state)];
+    let historyIndex = 0;
+    function saveState() { if (historyIndex < history.length - 1) { history.splice(historyIndex + 1); } history.push(JSON.stringify(state)); historyIndex = history.length - 1; updateUndoRedoButtons(); }
+    function undo() { if (historyIndex > 0) { historyIndex--; loadState(history[historyIndex]); } }
+    function redo() { if (historyIndex < history.length - 1) { historyIndex++; loadState(history[historyIndex]); } }
+    function loadState(jsonState) { state = JSON.parse(jsonState); renderAll(); updateUndoRedoButtons(); updateInspector(); renderComponentLibrary(); }
+    function updateUndoRedoButtons() { undoBtn.disabled = historyIndex === 0; redoBtn.disabled = historyIndex === history.length - 1; }
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    // --- レンダリング ---
+    function renderAll() {
         canvas.innerHTML = '';
-        websiteState.structure.forEach(part => {
-            const itemEl = document.createElement('div');
-            itemEl.className = 'canvas-item';
-            itemEl.dataset.id = part.id;
-            itemEl.draggable = true;
+        const rootItems = Object.values(state.items).filter(item => !item.parentId);
+        rootItems.sort((a, b) => getItemProperty(a.id, 'zIndex') - getItemProperty(b.id, 'zIndex')).forEach(item => {
+            renderItem(item, 0, 0); // ルートアイテムのオフセットは0,0
+        });
+        renderSelectionBox();
+        renderLayerPanel();
+    }
 
-            if (part.id === selectedItemId) {
-                itemEl.classList.add('selected');
-            }
+    // 新しい再帰的レンダリング関数
+    function renderItem(item, offsetX, offsetY) {
+        if (!getItemProperty(item.id, 'visible')) {
+            return;
+        }
 
-            itemEl.innerHTML = `
-                <div class="item-header">${part.type}</div>
-                <div class="item-id">ID: ${part.id}</div>
-                <button class="delete-btn" data-id="${part.id}">×</button>
-            `;
-            
-            // クリックで選択
-            itemEl.addEventListener('click', (e) => {
-                e.stopPropagation(); // 親へのイベント伝播を停止
-                selectItem(part.id);
-            });
-            
-            // 削除ボタン
-            itemEl.querySelector('.delete-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if(confirm(`パーツ「${part.type} (${part.id})」を削除しますか？`)) {
-                    deletePart(part.id);
+        const itemEl = document.createElement('div');
+        itemEl.className = 'canvas-item';
+        if (item.isArtboard) {
+            itemEl.classList.add('artboard');
+        }
+        itemEl.dataset.id = item.id;
+        itemEl.style.left = `${offsetX + getItemProperty(item.id, 'x')}px`;
+        itemEl.style.top = `${offsetY + getItemProperty(item.id, 'y')}px`;
+        itemEl.style.width = `${getItemProperty(item.id, 'width')}px`;
+        itemEl.style.height = `${getItemProperty(item.id, 'height')}px`;
+        itemEl.style.zIndex = getItemProperty(item.id, 'zIndex');
+        itemEl.style.backgroundColor = getItemProperty(item.id, 'backgroundColor') || '#fff';
+        
+        if (item.isArtboard) {
+            const titleEl = document.createElement('div');
+            titleEl.className = 'artboard-title';
+            const pageNumberEl = document.createElement('span');
+            pageNumberEl.className = 'artboard-page-number';
+            pageNumberEl.textContent = `P${item.pageNumber}`;
+            const deviceTypeEl = document.createElement('span');
+            deviceTypeEl.className = 'artboard-device-type';
+            deviceTypeEl.textContent = item.deviceType === 'desktop' ? 'PC' : 'スマホ';
+            titleEl.appendChild(pageNumberEl);
+            titleEl.appendChild(deviceTypeEl);
+            itemEl.appendChild(titleEl);
+        }
+        
+        const assetId = getItemProperty(item.id, 'assetId');
+        if (item.type === '画像' && assetId && state.assets[assetId]) {
+            itemEl.style.backgroundImage = `url(${state.assets[assetId].dataUrl})`;
+            itemEl.style.backgroundSize = 'cover';
+            itemEl.style.backgroundPosition = 'center';
+        }
+        
+        if (getItemProperty(item.id, 'locked')) {
+            itemEl.style.cursor = 'not-allowed';
+        }
+        
+        const contentEl = document.createElement('div');
+        contentEl.className = 'item-content';
+        contentEl.style.color = getItemProperty(item.id, 'color') || '#000';
+        contentEl.style.fontSize = getItemProperty(item.id, 'fontSize') ? `${getItemProperty(item.id, 'fontSize')}px` : '16px';
+        contentEl.innerText = getItemProperty(item.id, 'content') || getItemProperty(item.id, 'type');
+        
+        if (item.type === '画像' && assetId && state.assets[assetId]) {
+            contentEl.style.display = 'none';
+        }
+        
+        itemEl.appendChild(contentEl);
+
+        if (state.selectedItemIds.includes(item.id)) {
+            itemEl.classList.add('selected');
+        }
+
+        // 子要素がいれば再帰的に描画
+        if (item.children && item.children.length > 0) {
+            item.children.forEach(childId => {
+                const childItem = state.items[childId];
+                if(childItem) {
+                    renderItem(childItem, offsetX + getItemProperty(item.id, 'x'), offsetY + getItemProperty(item.id, 'y'));
                 }
             });
+        }
 
-            canvas.appendChild(itemEl);
-        });
-    }
-
-    function selectItem(id) {
-        selectedItemId = id;
-        renderCanvas(); // 選択状態のハイライトを更新
-        updateInspector(id);
+        canvas.appendChild(itemEl);
     }
     
-    function updateInspector(id) {
-        const part = websiteState.structure.find(p => p.id === id);
-        if (!part) {
-            clearInspector();
+    function renderLayerPanel() {
+        const layerList = document.getElementById('layer-list');
+        layerList.innerHTML = '';
+
+        const sortedItems = Object.values(state.items).sort((a, b) => b.zIndex - a.zIndex);
+
+        sortedItems.forEach(item => {
+            const layerEl = document.createElement('div');
+            layerEl.className = 'layer-item';
+            layerEl.dataset.id = item.id;
+            layerEl.draggable = true;
+
+            if (state.selectedItemIds.includes(item.id)) {
+                layerEl.classList.add('selected');
+            }
+            if (!getItemProperty(item.id, 'visible')) {
+                layerEl.classList.add('hidden-item');
+            }
+            
+            const nameEl = document.createElement('span');
+            nameEl.className = 'layer-name';
+            nameEl.textContent = getItemProperty(item.id, 'content') || getItemProperty(item.id, 'type');
+            
+            const controlsEl = document.createElement('div');
+            controlsEl.className = 'layer-controls';
+            
+            const lockBtn = document.createElement('button');
+            lockBtn.innerHTML = getItemProperty(item.id, 'locked') ? '🔒' : '🔓';
+            if(getItemProperty(item.id, 'locked')) lockBtn.classList.add('active');
+            lockBtn.dataset.id = item.id;
+            lockBtn.dataset.action = 'toggle-lock';
+            
+            const visibilityBtn = document.createElement('button');
+            visibilityBtn.innerHTML = getItemProperty(item.id, 'visible') ? '👁️' : '🙈';
+            if(getItemProperty(item.id, 'visible')) visibilityBtn.classList.add('active');
+            visibilityBtn.dataset.id = item.id;
+            visibilityBtn.dataset.action = 'toggle-visibility';
+            
+            controlsEl.appendChild(lockBtn);
+            controlsEl.appendChild(visibilityBtn);
+
+            layerEl.appendChild(nameEl);
+            layerEl.appendChild(controlsEl);
+            layerList.appendChild(layerEl);
+        });
+    }
+    
+    // --- 選択ボックスとリサイズハンドルのレンダリング ---
+    function renderSelectionBox() {
+        const existingBox = document.getElementById('selection-box');
+        if (existingBox) existingBox.remove();
+
+        if (state.selectedItemIds.length === 0) return;
+
+        const box = getSelectionBoundingBox();
+        const selectionBox = document.createElement('div');
+        selectionBox.id = 'selection-box';
+        selectionBox.style.left = `${box.x}px`;
+        selectionBox.style.top = `${box.y}px`;
+        selectionBox.style.width = `${box.width}px`;
+        selectionBox.style.height = `${box.height}px`;
+
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(pos => {
+            const resizer = document.createElement('div');
+            resizer.className = `resizer ${pos}`;
+            resizer.dataset.direction = pos;
+            selectionBox.appendChild(resizer);
+        });
+        canvas.appendChild(selectionBox);
+    }
+    
+    function getSelectionBoundingBox() {
+        if (state.selectedItemIds.length === 0) return null;
+        const selectedItems = state.selectedItemIds.map(id => state.items[id]);
+        const minX = Math.min(...selectedItems.map(i => getItemProperty(i.id, 'x')));
+        const minY = Math.min(...selectedItems.map(i => getItemProperty(i.id, 'y')));
+        const maxX = Math.max(...selectedItems.map(i => getItemProperty(i.id, 'x') + getItemProperty(i.id, 'width')));
+        const maxY = Math.max(...selectedItems.map(i => getItemProperty(i.id, 'y') + getItemProperty(i.id, 'height')));
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+    
+    function groupSelectedItems() {
+        if (state.selectedItemIds.length < 2) return;
+
+        // グループ化されるアイテムの中に、すでにグループがあれば処理しない（ネストは複雑化するため一旦除外）
+        if (state.selectedItemIds.some(id => state.items[id].children.length > 0)) {
+            alert("Groups cannot be nested in this version.");
+            return;
+        }
+
+        const childrenIds = [...state.selectedItemIds];
+        const childrenItems = childrenIds.map(id => state.items[id]);
+
+        // 新しいグループアイテムのバウンディングボックスを計算
+        const box = getSelectionBoundingBox();
+
+        // 新しいグループアイテムを作成
+        const groupId = `item-${state.nextId++}`;
+        state.items[groupId] = {
+            id: groupId,
+            parentId: null,
+            children: childrenIds,
+            type: 'グループ',
+            properties: {
+                desktop: {
+                    x: box.x,
+                    y: box.y,
+                    width: box.width,
+                    height: box.height,
+                    visible: true,
+                    backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                    zIndex: Object.keys(state.items).length
+                }
+            },
+            locked: false,
+            content: 'Group',
+        };
+
+        // 子アイテムの座標をグループからの相対座標に変換し、parentIdを設定
+        const groupDesktopProps = state.items[groupId].properties.desktop;
+        childrenItems.forEach(child => {
+            const childDesktopProps = child.properties.desktop;
+            childDesktopProps.x -= groupDesktopProps.x;
+            childDesktopProps.y -= groupDesktopProps.y;
+            child.parentId = groupId;
+        });
+
+        state.selectedItemIds = [groupId]; // 選択を新しいグループに変更
+        saveState();
+        renderAll();
+        updateInspector();
+    }
+
+    function ungroupSelectedItems() {
+        const groupIds = state.selectedItemIds.filter(id => state.items[id].children.length > 0);
+        if (groupIds.length === 0) return;
+
+        let newSelectedIds = [];
+        groupIds.forEach(groupId => {
+            const group = state.items[groupId];
+            const groupDesktopProps = group.properties.desktop;
+
+            group.children.forEach(childId => {
+                const child = state.items[childId];
+                if(child) {
+                    const childDesktopProps = child.properties.desktop;
+                    childDesktopProps.x += groupDesktopProps.x;
+                    childDesktopProps.y += groupDesktopProps.y;
+                    child.parentId = null;
+                    newSelectedIds.push(childId);
+                }
+            });
+            delete state.items[groupId];
+        });
+
+        state.selectedItemIds = newSelectedIds;
+        saveState();
+        renderAll();
+        updateInspector();
+    }
+
+    // --- ドラッグ＆ドロップ ---
+    document.querySelectorAll('.part').forEach(p => {
+        p.addEventListener('dragstart', (e) => {
+            const data = {
+                type: e.target.dataset.type,
+                deviceType: e.target.dataset.device
+            };
+            e.dataTransfer.setData('application/json', JSON.stringify(data));
+        });
+    });
+    canvas.addEventListener('dragover', (e) => e.preventDefault());
+    canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+        const worldPos = screenToWorld(e.clientX, e.clientY);
+        
+        if (data.type === 'asset') {
+            const targetItemEl = e.target.closest('.canvas-item');
+            if (targetItemEl) {
+                const targetId = targetItemEl.dataset.id;
+                if (state.items[targetId].type === '画像') {
+                    setItemProperty(targetId, 'assetId', data.assetId);
+                    saveState();
+                    renderAll();
+                    return;
+                }
+            }
+            createItem('画像', worldPos.x, worldPos.y, { assetId: data.assetId });
+            saveState();
+        } else if(data.isComponent) {
+            createItemFromComponent(data.type, worldPos.x, worldPos.y);
+        } else {
+            createItem(data.type, worldPos.x, worldPos.y, { deviceType: data.deviceType });
+        }
+        saveState();
+    });
+
+    // --- アイテム作成 ---
+    function createItem(type, x, y, options = {}) {
+        const id = `item-${state.nextId++}`;
+        const isArtboard = type === 'アートボード';
+        
+        if (isArtboard) {
+            artboardPageCount++;
+            const deviceType = options.deviceType || 'desktop';
+            const preset = DEVICE_PRESETS[deviceType];
+            options.width = preset.width;
+            options.height = preset.height;
+            options.content = `${preset.name} - Page ${artboardPageCount}`;
+        }
+        
+        state.items[id] = {
+            id,
+            type,
+            parentId: null,
+            children: [],
+            isArtboard: isArtboard,
+            artboardId: isArtboard ? null : options.artboardId || null,
+            deviceType: isArtboard ? options.deviceType : null,
+            pageNumber: isArtboard ? artboardPageCount : null,
+            properties: {
+                desktop: {
+                    x: Math.round(x),
+                    y: Math.round(y),
+                    width: options.width || (isArtboard ? 1280 : 200),
+                    height: options.height || (isArtboard ? 800 : 100),
+                    zIndex: Object.keys(state.items).length,
+                    visible: true,
+                    backgroundColor: options.backgroundColor || (isArtboard ? '#FFFFFF' : '#ffffff'),
+                    color: options.color || '#000000',
+                    fontSize: options.fontSize || 16,
+                    borderRadius: options.borderRadius || 0,
+                    assetId: options.assetId || null,
+                }
+            },
+            locked: false,
+            content: options.content || `New ${type}`,
+        };
+
+        if (!isArtboard && !options.artboardId) {
+            const artboard = findArtboardAt(x, y);
+            if (artboard) {
+                state.items[id].artboardId = artboard.id;
+            }
+        }
+
+        state.selectedItemIds = [id];
+        updateCanvasSize();
+        renderAll();
+        updateInspector();
+        return id;
+    }
+
+    function createItemFromComponent(name, x, y) {
+        const componentData = state.customComponents[name];
+        if (!componentData) return;
+        const options = { ...componentData };
+        delete options.id;
+        delete options.x;
+        delete options.y;
+        createItem(`Component: ${name}`, x, y, options);
+    }
+
+    // --- メインのイベント処理 ---
+    let dragInfo = {};
+    canvas.addEventListener('mousedown', (e) => {
+        const targetItemEl = e.target.closest('.canvas-item');
+        const targetResizerEl = e.target.closest('.resizer');
+        
+        if (targetResizerEl && state.selectedItemIds.length > 0) {
+            e.stopPropagation();
+            dragInfo = {
+                mode: 'resize',
+                direction: targetResizerEl.dataset.direction,
+                initialBox: getSelectionBoundingBox(),
+                initialItems: state.selectedItemIds.map(id => ({
+                    id,
+                    x: getItemProperty(id, 'x'),
+                    y: getItemProperty(id, 'y'),
+                    width: getItemProperty(id, 'width'),
+                    height: getItemProperty(id, 'height')
+                })),
+                startX: e.clientX,
+                startY: e.clientY,
+            };
+        } else if (targetItemEl) {
+            e.stopPropagation();
+            const id = targetItemEl.dataset.id;
+            
+            if (getItemProperty(id, 'locked')) return;
+            
+            if (e.shiftKey) {
+                if (state.selectedItemIds.includes(id)) {
+                    state.selectedItemIds = state.selectedItemIds.filter(sid => sid !== id);
+                } else {
+                    state.selectedItemIds.push(id);
+                }
+            } else if (!state.selectedItemIds.includes(id)) {
+                state.selectedItemIds = [id];
+            }
+            
+            const maxZ = Math.max(-1, ...Object.values(state.items).map(i => getItemProperty(i.id, 'zIndex')));
+            state.selectedItemIds.forEach((sid, i) => {
+                setItemProperty(sid, 'zIndex', maxZ + 1 + i);
+            });
+            
+            dragInfo = {
+                mode: 'move',
+                initialItems: state.selectedItemIds.map(id => ({
+                    id,
+                    x: getItemProperty(id, 'x'),
+                    y: getItemProperty(id, 'y')
+                })),
+                startX: e.clientX,
+                startY: e.clientY,
+            };
+        } else {
+            const worldPos = screenToWorld(e.clientX, e.clientY);
+            if(!e.shiftKey) state.selectedItemIds = [];
+        }
+        
+        renderAll();
+        updateInspector();
+        
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+    });
+
+    function handleMouseMove(e) {
+        if (!dragInfo.mode) return;
+        const dx = e.clientX - dragInfo.startX;
+        const dy = e.clientY - dragInfo.startY;
+
+        if (dragInfo.mode === 'move') {
+            dragInfo.initialItems.forEach(initialItem => {
+                const item = state.items[initialItem.id];
+                if (getItemProperty(item.id, 'locked')) return;
+
+                const parentOffset = item.parentId ? {
+                    x: getItemProperty(item.parentId, 'x'),
+                    y: getItemProperty(item.parentId, 'y')
+                } : { x: 0, y: 0 };
+
+                let newX = initialItem.x + dx / state.camera.zoom - parentOffset.x;
+                let newY = initialItem.y + dy / state.camera.zoom - parentOffset.y;
+
+                if (!e.shiftKey) {
+                    newX = snapToGrid(newX);
+                    newY = snapToGrid(newY);
+                }
+
+                setItemProperty(item.id, 'x', newX);
+                setItemProperty(item.id, 'y', newY);
+
+                if (item.isArtboard) {
+                    Object.values(state.items).forEach(otherItem => {
+                        if (otherItem.artboardId === item.id) {
+                            const otherX = getItemProperty(otherItem.id, 'x') + dx / state.camera.zoom;
+                            const otherY = getItemProperty(otherItem.id, 'y') + dy / state.camera.zoom;
+                            setItemProperty(otherItem.id, 'x', otherX);
+                            setItemProperty(otherItem.id, 'y', otherY);
+                        }
+                    });
+                }
+            });
+            updateCanvasSize();
+            renderAll();
+        } else if (dragInfo.mode === 'resize') {
+            const { initialBox, direction } = dragInfo;
+            let scaleX = 1, scaleY = 1, offsetX = 0, offsetY = 0;
+
+            if (direction.includes('right')) scaleX = (initialBox.width + dx / state.camera.zoom) / initialBox.width;
+            if (direction.includes('left')) { scaleX = (initialBox.width - dx / state.camera.zoom) / initialBox.width; offsetX = dx / state.camera.zoom; }
+            if (direction.includes('bottom')) scaleY = (initialBox.height + dy / state.camera.zoom) / initialBox.height;
+            if (direction.includes('top')) { scaleY = (initialBox.height - dy / state.camera.zoom) / initialBox.height; offsetY = dy / state.camera.zoom; }
+
+            dragInfo.initialItems.forEach(initialItem => {
+                const item = state.items[initialItem.id];
+                if (getItemProperty(item.id, 'locked')) return;
+
+                const parentOffset = item.parentId ? {
+                    x: getItemProperty(item.parentId, 'x'),
+                    y: getItemProperty(item.parentId, 'y')
+                } : { x: 0, y: 0 };
+
+                const relX = initialItem.x - initialBox.x;
+                const relY = initialItem.y - initialBox.y;
+
+                let newX = initialBox.x + offsetX + relX * scaleX - parentOffset.x;
+                let newY = initialBox.y + offsetY + relY * scaleY - parentOffset.y;
+                let newWidth = initialItem.width * scaleX;
+                let newHeight = initialItem.height * scaleY;
+
+                if (!e.shiftKey) {
+                    newX = snapToGrid(newX);
+                    newY = snapToGrid(newY);
+                    newWidth = snapToGrid(newWidth);
+                    newHeight = snapToGrid(newHeight);
+                }
+
+                setItemProperty(item.id, 'x', newX);
+                setItemProperty(item.id, 'y', newY);
+                setItemProperty(item.id, 'width', newWidth);
+                setItemProperty(item.id, 'height', newHeight);
+            });
+            updateCanvasSize();
+            renderAll();
+        }
+    }
+
+    function handleMouseUp(e) {
+        if (!dragInfo.mode) return;
+
+        if (dragInfo.mode === 'resize') {
+            saveState();
+        } else if (dragInfo.mode === 'move') {
+            saveState();
+        }
+        
+        dragInfo = {};
+        renderAll();
+        updateInspector();
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+    }
+    
+    // --- インスペクター更新 ---
+    function parseUnit(value) {
+        if(typeof value !== 'string' && typeof value !== 'number') return {value: 0, unit: 'px'};
+        const strValue = String(value);
+        const num = parseFloat(strValue);
+        const unit = strValue.match(/px|%|vw|vh|em|rem/)?.[0] || 'px';
+        return { value: num, unit: unit };
+    }
+
+    function updateInspector() {
+        if (state.selectedItemIds.length === 0) {
+            inspectorContent.innerHTML = `<div id="inspector-placeholder">Select an item on the canvas.</div>`;
             return;
         }
         
-        inspectorPlaceholder.style.display = 'none';
+        if (state.selectedItemIds.length === 1) {
+            const item = state.items[state.selectedItemIds[0]];
+            const props = {
+                width: getItemProperty(item.id, 'width'),
+                height: getItemProperty(item.id, 'height'),
+                borderRadius: getItemProperty(item.id, 'borderRadius') || 0,
+                x: getItemProperty(item.id, 'x'),
+                y: getItemProperty(item.id, 'y'),
+                backgroundColor: getItemProperty(item.id, 'backgroundColor') || '#ffffff',
+                color: getItemProperty(item.id, 'color') || '#000000',
+                fontSize: getItemProperty(item.id, 'fontSize') || 16,
+                content: getItemProperty(item.id, 'content') || '',
+            };
+
         inspectorContent.innerHTML = `
-            <h4>${part.type} (ID: ${part.id})</h4>
-            <p>ここにこのパーツに関する具体的なデザインや機能の指示を書いてください。</p>
-            <textarea id="note-textarea">${websiteState.notes[id]}</textarea>
-        `;
-        
-        const textarea = document.getElementById('note-textarea');
-        textarea.focus();
-        textarea.addEventListener('input', () => {
-            websiteState.notes[id] = textarea.value;
-        });
+                <h4>${getItemProperty(item.id, 'type')} (ID: ${item.id})</h4>
+                <div class="prop-group">
+                    <h5>Transform</h5>
+                    <div class="prop-item">
+                        <label>X</label>
+                        <input type="number" data-prop="x" value="${Math.round(props.x)}">
+                    </div>
+                    <div class="prop-item">
+                        <label>Y</label>
+                        <input type="number" data-prop="y" value="${Math.round(props.y)}">
+                    </div>
+                    <div class="prop-item">
+                        <label>Width</label>
+                        <div>
+                            <input type="number" data-prop="widthValue" value="${parseUnit(props.width).value}">
+                            <select data-prop="widthUnit">
+                                <option value="px" ${parseUnit(props.width).unit === 'px' ? 'selected' : ''}>px</option>
+                                <option value="%" ${parseUnit(props.width).unit === '%' ? 'selected' : ''}>%</option>
+                                <option value="vw" ${parseUnit(props.width).unit === 'vw' ? 'selected' : ''}>vw</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="prop-item">
+                        <label>Height</label>
+                        <div>
+                            <input type="number" data-prop="heightValue" value="${parseUnit(props.height).value}">
+                            <select data-prop="heightUnit">
+                                <option value="px" ${parseUnit(props.height).unit === 'px' ? 'selected' : ''}>px</option>
+                                <option value="%" ${parseUnit(props.height).unit === '%' ? 'selected' : ''}>%</option>
+                                <option value="vh" ${parseUnit(props.height).unit === 'vh' ? 'selected' : ''}>vh</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="prop-group">
+                    <h5>Appearance</h5>
+                    <div class="prop-item">
+                        <label>Content</label>
+                        <textarea data-prop="content">${props.content}</textarea>
+                    </div>
+                    <div class="prop-item">
+                        <label>Bg Color</label>
+                        <input type="color" data-prop="backgroundColor" value="${props.backgroundColor}">
+                    </div>
+                    <div class="prop-item">
+                        <label>Text Color</label>
+                        <input type="color" data-prop="color" value="${props.color}">
+                    </div>
+                    <div class="prop-item">
+                        <label>Font Size</label>
+                        <input type="number" data-prop="fontSize" value="${props.fontSize}">
+                    </div>
+                    <div class="prop-item">
+                        <label>Border Radius</label>
+                        <input type="number" data-prop="borderRadius" value="${props.borderRadius}" min="0">
+                    </div>
+                </div>
+                <div class="prop-group">
+                    <h5>Actions</h5>
+                    <button id="save-component-btn">Save as Component</button>
+                </div>`;
+
+            inspectorContent.querySelectorAll('input, select, textarea').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const prop = e.target.dataset.prop;
+                    if (prop === 'widthValue' || prop === 'widthUnit') {
+                        const value = inspectorContent.querySelector('[data-prop="widthValue"]').value;
+                        const unit = inspectorContent.querySelector('[data-prop="widthUnit"]').value;
+                        setItemProperty(item.id, 'width', `${value}${unit}`);
+                    } else if (prop === 'heightValue' || prop === 'heightUnit') {
+                        const value = inspectorContent.querySelector('[data-prop="heightValue"]').value;
+                        const unit = inspectorContent.querySelector('[data-prop="heightUnit"]').value;
+                        setItemProperty(item.id, 'height', `${value}${unit}`);
+                    } else {
+                        const value = e.target.type === 'number' ? parseFloat(e.target.value) : e.target.value;
+                        setItemProperty(item.id, prop, value);
+                    }
+                    renderAll();
+                });
+                input.addEventListener('change', saveState);
+            });
+
+            document.getElementById('save-component-btn').addEventListener('click', saveAsComponent);
+        } else {
+            inspectorContent.innerHTML = `<h4>${state.selectedItemIds.length} items selected</h4><p>Multiple items are selected. You can move, resize, copy, or delete them as a group.</p>`;
+        }
     }
 
-    function clearInspector() {
-        inspectorContent.innerHTML = '';
-        inspectorContent.appendChild(inspectorPlaceholder);
-        inspectorPlaceholder.style.display = 'block';
-    }
+    // --- キーボードショートカット (コピペ、削除) ---
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; // 入力中は無視
+
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const isCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+        if (isCtrl && e.key === 'c') { // Copy
+            e.preventDefault();
+            copySelectedItems();
+        } else if (isCtrl && e.key === 'v') { // Paste
+            e.preventDefault();
+            pasteItems();
+        } else if (isCtrl && e.key === 'z') { // Undo
+            e.preventDefault();
+            undo();
+        } else if (isCtrl && e.key === 'y' || (isCtrl && e.shiftKey && e.key === 'z')) { // Redo
+            e.preventDefault();
+            redo();
+        } else if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            deleteSelectedItems();
+        } else if (isCtrl && e.key === 'g') { // Group
+            e.preventDefault();
+            if(e.shiftKey) { // Ungroup
+                ungroupSelectedItems();
+            } else {
+                groupSelectedItems();
+            }
+        }
+    });
     
-    // キャンバス外クリックで選択解除
-    document.body.addEventListener('click', (e) => {
-        if (!canvas.contains(e.target) && !inspectorContent.contains(e.target)) {
-            selectedItemId = null;
-            renderCanvas();
-            clearInspector();
+    function copySelectedItems() {
+        if(state.selectedItemIds.length === 0) return;
+        clipboard = state.selectedItemIds.map(id => JSON.parse(JSON.stringify(state.items[id])));
+        console.log(`${clipboard.length} items copied.`);
+    }
+
+    function pasteItems() {
+        if(clipboard.length === 0) return;
+        const newIds = [];
+        const offset = 20;
+        clipboard.forEach(itemToPaste => {
+            const newItem = { ...itemToPaste };
+            newItem.id = `item-${state.nextId++}`;
+            newItem.x += offset;
+            newItem.y += offset;
+            newItem.zIndex = Object.keys(state.items).length;
+            state.items[newItem.id] = newItem;
+            newIds.push(newItem.id);
+        });
+        state.selectedItemIds = newIds; // ペーストしたアイテムを選択
+        renderAll();
+        updateInspector();
+        saveState();
+        console.log(`${newIds.length} items pasted.`);
+    }
+
+    function deleteSelectedItems(){
+        if(state.selectedItemIds.length === 0) return;
+        state.selectedItemIds.forEach(id => delete state.items[id]);
+        state.selectedItemIds = [];
+        renderAll();
+        updateInspector();
+        saveState();
+    }
+
+    // --- コンポーネント機能 (v3からほぼ変更なし) ---
+    function saveAsComponent() {
+        if (state.selectedItemIds.length !== 1) { alert("Please select a single item to save as a component."); return; }
+        const name = prompt("Enter a name for the new component:", "MyComponent");
+        if (!name) return;
+        const baseItem = JSON.parse(JSON.stringify(state.items[state.selectedItemIds[0]]));
+        state.customComponents[name] = baseItem;
+        renderComponentLibrary(); saveState();
+    }
+    function renderComponentLibrary() { const list = document.getElementById('component-list'); list.innerHTML = ''; for (const name in state.customComponents) { const el = document.createElement('div'); el.className = 'component-item'; el.draggable = true; el.dataset.type = name; el.innerText = name; el.addEventListener('dragstart', (e) => e.dataTransfer.setData('application/json', JSON.stringify({ type: name, isComponent: true }))); list.appendChild(el); } }
+
+    // --- エクスポート機能 (v3から変更なし) ---
+    document.getElementById('export-btn').addEventListener('click', () => { const dataStr = JSON.stringify(state, null, 2); const blob = new Blob([dataStr], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "layout_v4.json"; a.click(); URL.revokeObjectURL(url); });
+
+    // 初期化
+    updateUndoRedoButtons();
+
+    // レイヤーパネルのイベント処理
+    const layerListContainer = document.getElementById('layer-list');
+
+    // クリックイベント（選択、ロック、表示/非表示）
+    layerListContainer.addEventListener('click', (e) => {
+        const target = e.target;
+        const layerItem = target.closest('.layer-item');
+        if (!layerItem) return;
+
+        const id = layerItem.dataset.id;
+        const action = target.dataset.action;
+
+        if (action === 'toggle-visibility') {
+            setItemProperty(id, 'visible', !getItemProperty(id, 'visible'));
+        } else if (action === 'toggle-lock') {
+            setItemProperty(id, 'locked', !getItemProperty(id, 'locked'));
+        } else { // レイヤー名部分をクリックで選択
+            if (e.shiftKey) {
+                if (state.selectedItemIds.includes(id)) {
+                    state.selectedItemIds = state.selectedItemIds.filter(sid => sid !== id);
+                } else {
+                    state.selectedItemIds.push(id);
+                }
+            } else {
+                state.selectedItemIds = [id];
+            }
+        }
+        
+        // ロックされているアイテムは選択から外す
+        state.selectedItemIds = state.selectedItemIds.filter(sid => !getItemProperty(sid, 'locked'));
+
+        renderAll();
+        updateInspector();
+        saveState();
+    });
+
+    // ドラッグ＆ドロップでz-index変更
+    let draggedLayerId = null;
+    layerListContainer.addEventListener('dragstart', (e) => {
+        const layerItem = e.target.closest('.layer-item');
+        if (layerItem) {
+            draggedLayerId = layerItem.dataset.id;
+            e.dataTransfer.effectAllowed = 'move';
         }
     });
 
-    // --- エクスポート機能 ---
-    exportBtn.addEventListener('click', () => {
-        if (websiteState.structure.length === 0) {
-            alert('キャンバスにパーツを配置してください。');
+    layerListContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const layerItem = e.target.closest('.layer-item');
+        if (layerItem && layerItem.dataset.id !== draggedLayerId) {
+            // ここでプレースホルダーなどを表示するとより親切
+        }
+    });
+
+    layerListContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const dropTargetItem = e.target.closest('.layer-item');
+        if (!dropTargetItem || !draggedLayerId || dropTargetItem.dataset.id === draggedLayerId) {
+            draggedLayerId = null;
             return;
         }
 
-        const jsonString = JSON.stringify(websiteState, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
+        // z-indexを入れ替える
+        const draggedItem = state.items[draggedLayerId];
+        const dropTarget = state.items[dropTargetItem.dataset.id];
+        
+        // 単純なz-index入れ替え
+        const tempZIndex = draggedItem.zIndex;
+        draggedItem.zIndex = dropTarget.zIndex;
+        dropTarget.zIndex = tempZIndex;
+
+        draggedLayerId = null;
+        renderAll();
+        saveState();
+    });
+
+    // --- カメラ操作機能 ---
+    function updateCameraTransform() {
+        canvas.style.transform = `translate(${state.camera.x}px, ${state.camera.y}px) scale(${state.camera.zoom})`;
+        canvas.style.transformOrigin = '0 0';
+    }
+
+    function screenToWorld(x, y) {
+        const canvasRect = canvas.getBoundingClientRect();
+        return {
+            x: (x - canvasRect.left - state.camera.x) / state.camera.zoom,
+            y: (y - canvasRect.top - state.camera.y) / state.camera.zoom,
+        };
+    }
+
+    // カメラ操作イベント
+    const canvasWrapper = document.getElementById('canvas-wrapper');
+    let isPanning = false;
+    let lastPanPos = { x: 0, y: 0 };
+
+    // ズーム (マウスホイール)
+    canvasWrapper.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomIntensity = 0.1;
+        const scroll = e.deltaY < 0 ? 1 : -1;
+        const newZoom = state.camera.zoom * (1 + scroll * zoomIntensity);
+        state.camera.zoom = Math.max(0.1, Math.min(5, newZoom));
+        updateCameraTransform();
+    });
+
+    // パン (スペースキー + ドラッグ)
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !isPanning) {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            isPanning = true;
+            canvasWrapper.style.cursor = 'grabbing';
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+            isPanning = false;
+            canvasWrapper.style.cursor = 'default';
+        }
+    });
+
+    canvasWrapper.addEventListener('mousedown', (e) => {
+        if (isPanning) {
+            lastPanPos = { x: e.clientX, y: e.clientY };
+        }
+    });
+
+    canvasWrapper.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            const dx = e.clientX - lastPanPos.x;
+            const dy = e.clientY - lastPanPos.y;
+            state.camera.x += dx;
+            state.camera.y += dy;
+            lastPanPos = { x: e.clientX, y: e.clientY };
+            updateCameraTransform();
+        }
+    });
+
+    // インラインテキスト編集
+    canvas.addEventListener('dblclick', (e) => {
+        const itemEl = e.target.closest('.canvas-item');
+        if (!itemEl) return;
+
+        const id = itemEl.dataset.id;
+        const item = state.items[id];
+        
+        if (item.type !== 'テキスト' && !getItemProperty(id, 'content')) return;
+        
+        const existingTextarea = document.getElementById('inline-editor');
+        if (existingTextarea) existingTextarea.blur();
+
+        const textarea = document.createElement('textarea');
+        textarea.id = 'inline-editor';
+        textarea.value = getItemProperty(id, 'content');
+        
+        const worldPos = screenToWorld(e.clientX, e.clientY);
+        const itemRect = itemEl.getBoundingClientRect();
+        
+        textarea.style.position = 'absolute';
+        textarea.style.left = `${getItemProperty(id, 'x')}px`;
+        textarea.style.top = `${getItemProperty(id, 'y')}px`;
+        textarea.style.width = `${getItemProperty(id, 'width')}px`;
+        textarea.style.height = `${getItemProperty(id, 'height')}px`;
+        textarea.style.fontSize = `${getItemProperty(id, 'fontSize')}px`;
+        textarea.style.color = getItemProperty(id, 'color');
+        textarea.style.textAlign = 'center';
+        textarea.style.padding = '10px';
+        textarea.style.border = '2px solid var(--secondary-color)';
+        textarea.style.boxSizing = 'border-box';
+        textarea.style.zIndex = 10001;
+        textarea.style.backgroundColor = getItemProperty(id, 'backgroundColor');
+        textarea.style.borderRadius = `${getItemProperty(id, 'borderRadius')}px`;
+        
+        textarea.style.transform = `scale(${state.camera.zoom})`;
+        textarea.style.transformOrigin = 'top left';
+
+        textarea.addEventListener('blur', () => {
+            setItemProperty(id, 'content', textarea.value);
+            canvas.removeChild(textarea);
+            saveState();
+            renderAll();
+        });
+        
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                textarea.blur();
+            }
+        });
+        
+        canvas.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+    });
+
+    // --- プロジェクト保存/読み込み機能 ---
+    const saveProjectBtn = document.getElementById('save-project-btn');
+    const loadProjectInput = document.getElementById('load-project-input');
+
+    saveProjectBtn.addEventListener('click', () => {
+        const projectData = JSON.stringify(state, null, 2);
+        const blob = new Blob([projectData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'website_spec.json';
-        document.body.appendChild(a);
+        a.download = 'my-project.json';
         a.click();
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     });
     
-    // --- スクリーンショット機能 ---
-    screenshotBtn.addEventListener('click', () => {
-        if (websiteState.structure.length === 0) {
-            alert('キャンバスにパーツを配置してください。');
+    loadProjectInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const projectData = event.target.result;
+                history = [projectData];
+                historyIndex = 0;
+                loadState(projectData);
+                alert('プロジェクトを読み込みました！');
+            } catch (error) {
+                alert('プロジェクトファイルの読み込みに失敗しました。ファイルが破損している可能性があります。');
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    // --- アセット管理機能 ---
+    const uploadAssetInput = document.getElementById('upload-asset-input');
+    const assetList = document.getElementById('asset-list');
+
+    uploadAssetInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const assetId = `asset-${state.nextAssetId++}`;
+            state.assets[assetId] = {
+                name: file.name,
+                dataUrl: event.target.result,
+            };
+            renderAssetLibrary();
+            saveState();
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    });
+
+    function renderAssetLibrary() {
+        assetList.innerHTML = '';
+        for (const id in state.assets) {
+            const asset = state.assets[id];
+            const assetEl = document.createElement('div');
+            assetEl.className = 'asset-item';
+            assetEl.draggable = true;
+            assetEl.innerHTML = `<img src="${asset.dataUrl}" width="50" height="50" style="pointer-events: none;"> <span>${asset.name}</span>`;
+            
+            assetEl.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'asset',
+                    assetId: id
+                }));
+            });
+            assetList.appendChild(assetEl);
+        }
+    }
+
+    // グリッドとスナップ機能
+    const SNAP_DISTANCE = 10;
+    const GRID_SIZE = 20;
+
+    function snapToGrid(value) {
+        return Math.round(value / GRID_SIZE) * GRID_SIZE;
+    }
+
+    // アートボード関連の関数
+    function findArtboardAt(x, y) {
+        return Object.values(state.items).find(item => 
+            item.isArtboard && 
+            x >= getItemProperty(item.id, 'x') && 
+            x <= getItemProperty(item.id, 'x') + getItemProperty(item.id, 'width') &&
+            y >= getItemProperty(item.id, 'y') && 
+            y <= getItemProperty(item.id, 'y') + getItemProperty(item.id, 'height')
+        );
+    }
+
+    // コンテキストメニュー機能
+    const contextMenu = document.getElementById('context-menu');
+
+    window.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const targetItemEl = e.target.closest('.canvas-item');
+        
+        let menuItems = '';
+        if (targetItemEl) {
+            const id = targetItemEl.dataset.id;
+            const item = state.items[id];
+            menuItems = `
+                <div class="context-menu-item" data-action="copy">コピー</div>
+                <div class="context-menu-item" data-action="delete">削除</div>
+                <hr>
+                <div class="context-menu-item" data-action="bring-to-front">最前面に移動</div>
+                <div class="context-menu-item" data-action="send-to-back">最背面に移動</div>
+                ${item.isArtboard ? `
+                    <hr>
+                    <div class="context-menu-item" data-action="select-all-in-artboard">アートボード内の全アイテムを選択</div>
+                ` : ''}
+            `;
+        } else {
+            menuItems = `
+                <div class="context-menu-item" data-action="paste">ペースト</div>
+                <div class="context-menu-item" data-action="select-all">すべて選択</div>
+            `;
+        }
+        
+        contextMenu.innerHTML = menuItems;
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.style.top = `${e.clientY}px`;
+    });
+
+    contextMenu.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        if (!action) return;
+
+        switch(action) {
+            case 'copy':
+                copySelectedItems();
+                break;
+            case 'paste':
+                pasteItems();
+                break;
+            case 'delete':
+                deleteSelectedItems();
+                break;
+            case 'bring-to-front':
+                const maxZ = Math.max(...Object.values(state.items).map(i => getItemProperty(i.id, 'zIndex')));
+                state.selectedItemIds.forEach(id => {
+                    setItemProperty(id, 'zIndex', maxZ + 1);
+                });
+                renderAll();
+                saveState();
+                break;
+            case 'send-to-back':
+                const minZ = Math.min(...Object.values(state.items).map(i => getItemProperty(i.id, 'zIndex')));
+                state.selectedItemIds.forEach(id => {
+                    setItemProperty(id, 'zIndex', minZ - 1);
+                });
+                renderAll();
+                saveState();
+                break;
+            case 'select-all':
+                state.selectedItemIds = Object.values(state.items)
+                    .filter(item => !item.isArtboard && !getItemProperty(item.id, 'locked'))
+                    .map(item => item.id);
+                renderAll();
+                updateInspector();
+                break;
+            case 'select-all-in-artboard':
+                const artboardId = state.selectedItemIds[0];
+                state.selectedItemIds = Object.values(state.items)
+                    .filter(item => item.artboardId === artboardId && !getItemProperty(item.id, 'locked'))
+                    .map(item => item.id);
+                renderAll();
+                updateInspector();
+                break;
+        }
+        contextMenu.style.display = 'none';
+    });
+
+    window.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
+
+    // キャンバスサイズ管理
+    const CANVAS_PADDING = 1000; // キャンバスの端からこの距離までアイテムが近づいたら拡張
+    let canvasWidth = 3000;
+    let canvasHeight = 3000;
+
+    function updateCanvasSize() {
+        const items = Object.values(state.items);
+        if (items.length === 0) return;
+
+        // すべてのアイテムの位置とサイズを考慮して必要なキャンバスサイズを計算
+        let maxX = 0;
+        let maxY = 0;
+
+        items.forEach(item => {
+            const x = getItemProperty(item.id, 'x');
+            const y = getItemProperty(item.id, 'y');
+            const width = getItemProperty(item.id, 'width');
+            const height = getItemProperty(item.id, 'height');
+
+            maxX = Math.max(maxX, x + width);
+            maxY = Math.max(maxY, y + height);
+        });
+
+        // パディングを追加
+        const newWidth = Math.max(canvasWidth, maxX + CANVAS_PADDING);
+        const newHeight = Math.max(canvasHeight, maxY + CANVAS_PADDING);
+
+        if (newWidth > canvasWidth || newHeight > canvasHeight) {
+            canvasWidth = newWidth;
+            canvasHeight = newHeight;
+            canvas.style.width = `${canvasWidth}px`;
+            canvas.style.height = `${canvasHeight}px`;
+            updateCanvasSizeIndicator();
+        }
+    }
+
+    function updateCanvasSizeIndicator() {
+        const indicator = document.getElementById('canvas-size-indicator');
+        indicator.textContent = `${Math.round(canvasWidth)} × ${Math.round(canvasHeight)}`;
+    }
+
+    // 初期化時にキャンバスサイズを設定
+    updateCanvasSize();
+    updateCanvasSizeIndicator();
+
+    // キャンバスサイズの監視
+    const canvasObserver = new ResizeObserver(() => {
+        updateCanvasSize();
+    });
+    canvasObserver.observe(canvas);
+
+    // キャンバス移動機能
+    let isDraggingCanvas = false;
+    let lastMousePos = { x: 0, y: 0 };
+
+    canvasWrapper.addEventListener('mousedown', (e) => {
+        // アイテムやリサイザーをクリックした場合は無視
+        if (e.target.closest('.canvas-item') || e.target.closest('.resizer')) {
             return;
         }
         
-        // 撮影前に選択を解除して見た目をきれいにする
-        const currentSelected = selectedItemId;
-        if(currentSelected) {
-            selectedItemId = null;
-            renderCanvas();
+        // スペースキーが押されている場合は無視（既存のパン機能と競合しないように）
+        if (e.code === 'Space') {
+            return;
         }
 
-        html2canvas(canvas, {
-            backgroundColor: "#fafafa", // 背景色を指定
-            onclone: (document) => { // クローンされたDOMに対して操作
-                // 撮影時にスクロールバーを非表示にする
-                document.getElementById('canvas').style.overflow = 'visible';
-            }
-        }).then(canvasImage => {
-            const a = document.createElement('a');
-            a.href = canvasImage.toDataURL('image/png');
-            a.download = 'layout_screenshot.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        });
+        isDraggingCanvas = true;
+        lastMousePos = { x: e.clientX, y: e.clientY };
+        canvasWrapper.classList.add('grabbing', 'dragging');
+        e.preventDefault();
+    });
 
-        // 撮影後に選択状態を戻す
-        if(currentSelected) {
-            selectItem(currentSelected);
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingCanvas) return;
+
+        const dx = e.clientX - lastMousePos.x;
+        const dy = e.clientY - lastMousePos.y;
+
+        state.camera.x += dx;
+        state.camera.y += dy;
+        lastMousePos = { x: e.clientX, y: e.clientY };
+
+        updateCameraTransform();
+        e.preventDefault();
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isDraggingCanvas) {
+            isDraggingCanvas = false;
+            canvasWrapper.classList.remove('grabbing', 'dragging');
         }
     });
+
+    // キャンバス移動中は他の操作を無効化
+    canvasWrapper.addEventListener('mousedown', (e) => {
+        if (isDraggingCanvas) {
+            e.stopPropagation();
+        }
+    });
+
+    // キャンバス移動中はアイテムの選択を無効化
+    canvas.addEventListener('mousedown', (e) => {
+        if (isDraggingCanvas) {
+            e.stopPropagation();
+        }
+    });
+
+    // キャンバス移動中はコンテキストメニューを無効化
+    canvasWrapper.addEventListener('contextmenu', (e) => {
+        if (isDraggingCanvas) {
+            e.preventDefault();
+        }
+    });
+
+    // アートボードのデバイス設定
+    const DEVICE_PRESETS = {
+        desktop: {
+            width: 960,
+            height: 600,
+            name: 'PC'
+        },
+        mobile: {
+            width: 320,
+            height: 568,
+            name: 'スマホ'
+        }
+    };
+
+    // アートボードのページ番号管理
+    let artboardPageCount = 0;
 });
 </script>
-
 </body>
 </html>
