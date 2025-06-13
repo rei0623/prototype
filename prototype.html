@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe & Note Generator Prototype</title>
+    <!-- html2canvasライブラリをCDNから読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* --- 全体レイアウト --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #1a237e;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            height: 75vh;
+            margin-bottom: 20px;
+        }
+        .pane {
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #3f51b5;
+            padding-bottom: 10px;
+            color: #3f51b5;
+        }
+
+        /* --- ① パーツライブラリ --- */
+        #parts-library {
+            flex-basis: 20%;
+        }
+        .part {
+            border: 2px dashed #007bff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: grab;
+            background-color: #e3f2fd;
+            text-align: center;
+            font-weight: bold;
+            color: #0d47a1;
+            transition: background-color 0.2s;
+        }
+        .part:hover {
+            background-color: #bbdefb;
+        }
+        .part:active {
+            cursor: grabbing;
+        }
+
+        /* --- ② レイアウトキャンバス --- */
+        #canvas {
+            flex-basis: 50%;
+            overflow-y: auto;
+            background-color: #fafafa;
+            padding: 10px; /* 内側の余白 */
+        }
+        .canvas-item {
+            border: 2px solid #4caf50;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 5px;
+            background-color: white;
+            position: relative;
+            cursor: pointer;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .canvas-item.selected {
+            border-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+        .item-header {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+        .item-id {
+            font-size: 0.8em;
+            color: #757575;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .canvas-item:hover .delete-btn {
+            opacity: 1;
+        }
+        .drag-over {
+            border: 2px dashed #ff9800;
+            background-color: #fff9c4;
+        }
+
+
+        /* --- ③ インスペクター＆メモ帳 --- */
+        #inspector {
+            flex-basis: 30%;
+        }
+        #inspector-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        #inspector-placeholder {
+            color: #999;
+            margin: auto;
+            text-align: center;
+        }
+        #note-textarea {
+            width: 100%;
+            height: 100%; /* 親要素の高さを埋める */
+            box-sizing: border-box; /* padding, borderをwidth/heightに含める */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        /* --- ボタンエリア --- */
+        .button-area {
+            text-align: center;
+        }
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.2s;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+        #screenshot-btn {
+            background-color: #2196F3;
+        }
+        #screenshot-btn:hover {
+            background-color: #1e88e5;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Wireframe & Note Generator</h1>
+
+    <div class="container">
+        <!-- ① パーツライブラリ -->
+        <div id="parts-library" class="pane">
+            <h3>パーツライブラリ</h3>
+            <div class="part" draggable="true" data-type="ヘッダー">ヘッダー</div>
+            <div class="part" draggable="true" data-type="ヒーローセクション">ヒーローセクション</div>
+            <div class="part" draggable="true" data-type="テキストブロック">テキストブロック</div>
+            <div class="part" draggable="true" data-type="画像">画像</div>
+            <div class="part" draggable="true" data-type="ボタン">ボタン</div>
+            <div class="part" draggable="true" data-type="2カラム">2カラム</div>
+            <div class="part" draggable="true" data-type="カードリスト">カードリスト</div>
+            <div class="part" draggable="true" data-type="フッター">フッター</div>
+        </div>
+
+        <!-- ② レイアウトキャンバス -->
+        <div id="canvas" class="pane">
+            <!-- ここにパーツがドラッグ＆ドロップされる -->
+        </div>
+
+        <!-- ③ インスペクター＆メモ帳 -->
+        <div id="inspector" class="pane">
+            <h3>指示メモ</h3>
+            <div id="inspector-content">
+                <div id="inspector-placeholder">キャンバス上のパーツを選択してください</div>
+                <!-- 選択されたパーツの情報がここに表示される -->
+            </div>
+        </div>
+    </div>
+
+    <div class="button-area">
+        <button id="export-btn" class="action-button">JSONをエクスポート</button>
+        <button id="screenshot-btn" class="action-button">スクリーンショット撮影</button>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM要素の取得 ---
+    const parts = document.querySelectorAll('.part');
+    const canvas = document.getElementById('canvas');
+    const inspectorContent = document.getElementById('inspector-content');
+    const inspectorPlaceholder = document.getElementById('inspector-placeholder');
+    const exportBtn = document.getElementById('export-btn');
+    const screenshotBtn = document.getElementById('screenshot-btn');
+
+    // --- 状態管理オブジェクト ---
+    let websiteState = {
+        structure: [],
+        notes: {}
+    };
+    let nextId = 1;
+    let selectedItemId = null;
+    let draggedItem = null;
+
+    // --- ドラッグ＆ドロップのイベントリスナー ---
+    parts.forEach(part => {
+        part.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.dataset.type);
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+    });
+
+    canvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        canvas.classList.add('drag-over');
+    });
+
+    canvas.addEventListener('dragleave', () => {
+        canvas.classList.remove('drag-over');
+    });
+
+    canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        canvas.classList.remove('drag-over');
+        const type = e.dataTransfer.getData('text/plain');
+        if (type) {
+            addPartToCanvas(type);
+        }
+    });
+
+    // --- キャンバス内の並べ替え用ドラッグ＆ドロップ ---
+    canvas.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('canvas-item')) {
+            draggedItem = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => e.target.style.opacity = '0.5', 0);
+        }
+    });
+
+    canvas.addEventListener('dragend', (e) => {
+        if (draggedItem) {
+            draggedItem.style.opacity = '1';
+            draggedItem = null;
+
+            // DOMの順番に基づいてstructureを更新
+            const newStructure = [];
+            document.querySelectorAll('.canvas-item').forEach(itemEl => {
+                const id = itemEl.dataset.id;
+                const part = websiteState.structure.find(p => p.id === id);
+                if(part) newStructure.push(part);
+            });
+            websiteState.structure = newStructure;
+        }
+    });
+
+    canvas.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const target = e.target.closest('.canvas-item');
+        if (target && draggedItem && target !== draggedItem) {
+            const rect = target.getBoundingClientRect();
+            const isAfter = e.clientY > rect.top + rect.height / 2;
+            if (isAfter) {
+                target.parentNode.insertBefore(draggedItem, target.nextSibling);
+            } else {
+                target.parentNode.insertBefore(draggedItem, target);
+            }
+        }
+    });
+
+
+    // --- 機能関数 ---
+    function addPartToCanvas(type) {
+        const id = `part-${nextId++}`;
+        const newPart = { id, type };
+        
+        websiteState.structure.push(newPart);
+        websiteState.notes[id] = ""; // メモを初期化
+
+        renderCanvas();
+        selectItem(id); // 追加したパーツを自動で選択
+    }
+
+    function deletePart(id) {
+        websiteState.structure = websiteState.structure.filter(p => p.id !== id);
+        delete websiteState.notes[id];
+        
+        if (selectedItemId === id) {
+            selectedItemId = null;
+            clearInspector();
+        }
+        renderCanvas();
+    }
+    
+    function renderCanvas() {
+        canvas.innerHTML = '';
+        websiteState.structure.forEach(part => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'canvas-item';
+            itemEl.dataset.id = part.id;
+            itemEl.draggable = true;
+
+            if (part.id === selectedItemId) {
+                itemEl.classList.add('selected');
+            }
+
+            itemEl.innerHTML = `
+                <div class="item-header">${part.type}</div>
+                <div class="item-id">ID: ${part.id}</div>
+                <button class="delete-btn" data-id="${part.id}">×</button>
+            `;
+            
+            // クリックで選択
+            itemEl.addEventListener('click', (e) => {
+                e.stopPropagation(); // 親へのイベント伝播を停止
+                selectItem(part.id);
+            });
+            
+            // 削除ボタン
+            itemEl.querySelector('.delete-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(confirm(`パーツ「${part.type} (${part.id})」を削除しますか？`)) {
+                    deletePart(part.id);
+                }
+            });
+
+            canvas.appendChild(itemEl);
+        });
+    }
+
+    function selectItem(id) {
+        selectedItemId = id;
+        renderCanvas(); // 選択状態のハイライトを更新
+        updateInspector(id);
+    }
+    
+    function updateInspector(id) {
+        const part = websiteState.structure.find(p => p.id === id);
+        if (!part) {
+            clearInspector();
+            return;
+        }
+        
+        inspectorPlaceholder.style.display = 'none';
+        inspectorContent.innerHTML = `
+            <h4>${part.type} (ID: ${part.id})</h4>
+            <p>ここにこのパーツに関する具体的なデザインや機能の指示を書いてください。</p>
+            <textarea id="note-textarea">${websiteState.notes[id]}</textarea>
+        `;
+        
+        const textarea = document.getElementById('note-textarea');
+        textarea.focus();
+        textarea.addEventListener('input', () => {
+            websiteState.notes[id] = textarea.value;
+        });
+    }
+
+    function clearInspector() {
+        inspectorContent.innerHTML = '';
+        inspectorContent.appendChild(inspectorPlaceholder);
+        inspectorPlaceholder.style.display = 'block';
+    }
+    
+    // キャンバス外クリックで選択解除
+    document.body.addEventListener('click', (e) => {
+        if (!canvas.contains(e.target) && !inspectorContent.contains(e.target)) {
+            selectedItemId = null;
+            renderCanvas();
+            clearInspector();
+        }
+    });
+
+    // --- エクスポート機能 ---
+    exportBtn.addEventListener('click', () => {
+        if (websiteState.structure.length === 0) {
+            alert('キャンバスにパーツを配置してください。');
+            return;
+        }
+
+        const jsonString = JSON.stringify(websiteState, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'website_spec.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+    
+    // --- スクリーンショット機能 ---
+    screenshotBtn.addEventListener('click', () => {
+        if (websiteState.structure.length === 0) {
+            alert('キャンバスにパーツを配置してください。');
+            return;
+        }
+        
+        // 撮影前に選択を解除して見た目をきれいにする
+        const currentSelected = selectedItemId;
+        if(currentSelected) {
+            selectedItemId = null;
+            renderCanvas();
+        }
+
+        html2canvas(canvas, {
+            backgroundColor: "#fafafa", // 背景色を指定
+            onclone: (document) => { // クローンされたDOMに対して操作
+                // 撮影時にスクロールバーを非表示にする
+                document.getElementById('canvas').style.overflow = 'visible';
+            }
+        }).then(canvasImage => {
+            const a = document.createElement('a');
+            a.href = canvasImage.toDataURL('image/png');
+            a.download = 'layout_screenshot.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        // 撮影後に選択状態を戻す
+        if(currentSelected) {
+            selectItem(currentSelected);
+        }
+    });
+});
+</script>
+
+</body>
+</html>
