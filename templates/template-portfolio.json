@@ -1,0 +1,121 @@
+{
+  "name": "ポートフォリオテンプレート",
+  "description": "クリエイター向けのポートフォリオサイトのレイアウトです。",
+  "version": "1.0.0",
+  "thumbnailUrl": "images/template-portfolio-thumb.png",
+  "dataUrl": "",
+  "projectData": {
+    "items": {
+      "artboard-pf-1": {
+        "id": "artboard-pf-1",
+        "type": "アートボード",
+        "parentId": null,
+        "children": ["header-pf-1", "gallery-pf-1", "footer-pf-1"],
+        "isArtboard": true,
+        "artboardId": null,
+        "deviceType": "desktop",
+        "pageNumber": 1,
+        "properties": {
+          "desktop": { "x": 50, "y": 50, "width": 1200, "height": 900, "zIndex": 0, "visible": true, "backgroundColor": "#2C2C2C", "color": "#EAEAEA", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ポートフォリオトップ"
+      },
+      "header-pf-1": {
+        "id": "header-pf-1",
+        "type": "コンテナ",
+        "parentId": "artboard-pf-1",
+        "children": ["name-title-pf-1"],
+        "properties": {
+          "desktop": { "x": 0, "y": 0, "width": 1200, "height": 100, "zIndex": 10, "visible": true, "backgroundColor": "#1E1E1E", "color": "#EAEAEA", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ポートフォリオヘッダー"
+      },
+      "name-title-pf-1": {
+        "id": "name-title-pf-1",
+        "type": "テキスト",
+        "parentId": "header-pf-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 50, "y": 30, "width": 400, "height": 40, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#FFFFFF", "fontSize": 32, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "クリエイター名"
+      },
+      "gallery-pf-1": {
+        "id": "gallery-pf-1",
+        "type": "コンテナ",
+        "parentId": "artboard-pf-1",
+        "children": ["image-placeholder-1", "image-placeholder-2", "image-placeholder-3"],
+        "properties": {
+          "desktop": { "x": 50, "y": 150, "width": 1100, "height": 600, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#EAEAEA", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "作品ギャラリー"
+      },
+      "image-placeholder-1": {
+        "id": "image-placeholder-1",
+        "type": "画像",
+        "parentId": "gallery-pf-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 0, "y": 0, "width": 350, "height": 250, "zIndex": 1, "visible": true, "backgroundColor": "#555555", "color": "#FFFFFF", "fontSize": 16, "borderRadius": 8, "assetId": null }
+        },
+        "locked": false,
+        "content": "作品1"
+      },
+      "image-placeholder-2": {
+        "id": "image-placeholder-2",
+        "type": "画像",
+        "parentId": "gallery-pf-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 375, "y": 0, "width": 350, "height": 250, "zIndex": 1, "visible": true, "backgroundColor": "#555555", "color": "#FFFFFF", "fontSize": 16, "borderRadius": 8, "assetId": null }
+        },
+        "locked": false,
+        "content": "作品2"
+      },
+      "image-placeholder-3": {
+        "id": "image-placeholder-3",
+        "type": "画像",
+        "parentId": "gallery-pf-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 750, "y": 0, "width": 350, "height": 250, "zIndex": 1, "visible": true, "backgroundColor": "#555555", "color": "#FFFFFF", "fontSize": 16, "borderRadius": 8, "assetId": null }
+        },
+        "locked": false,
+        "content": "作品3"
+      },
+      "footer-pf-1": {
+        "id": "footer-pf-1",
+        "type": "コンテナ",
+        "parentId": "artboard-pf-1",
+        "children": ["contact-info-pf-1"],
+        "properties": {
+          "desktop": { "x": 0, "y": 800, "width": 1200, "height": 100, "zIndex": 10, "visible": true, "backgroundColor": "#1E1E1E", "color": "#EAEAEA", "fontSize": 14, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ポートフォリオフッター"
+      },
+      "contact-info-pf-1": {
+        "id": "contact-info-pf-1",
+        "type": "テキスト",
+        "parentId": "footer-pf-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 50, "y": 35, "width": 600, "height": 30, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#A0A0A0", "fontSize": 14, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "連絡先: email@example.com"
+      }
+    },
+    "customComponents": {},
+    "nextId": 12,
+    "selectedItemIds": [],
+    "currentView": "desktop",
+    "camera": { "x": 0, "y": 0, "zoom": 1 },
+    "assets": {},
+    "nextAssetId": 1
+  }
+}

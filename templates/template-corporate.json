@@ -1,0 +1,121 @@
+{
+  "name": "コーポレートサイトテンプレート",
+  "description": "基本的なコーポレートサイトのレイアウトです。",
+  "version": "1.0.0",
+  "thumbnailUrl": "images/template-corporate-thumb.png",
+  "dataUrl": "",
+  "projectData": {
+    "items": {
+      "artboard-1": {
+        "id": "artboard-1",
+        "type": "アートボード",
+        "parentId": null,
+        "children": ["header-1", "hero-1", "footer-1"],
+        "isArtboard": true,
+        "artboardId": null,
+        "deviceType": "desktop",
+        "pageNumber": 1,
+        "properties": {
+          "desktop": { "x": 50, "y": 50, "width": 1280, "height": 720, "zIndex": 0, "visible": true, "backgroundColor": "#FFFFFF", "color": "#333333", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ホームページ"
+      },
+      "header-1": {
+        "id": "header-1",
+        "type": "コンテナ",
+        "parentId": "artboard-1",
+        "children": ["logo-text-1", "nav-menu-1"],
+        "properties": {
+          "desktop": { "x": 0, "y": 0, "width": 1280, "height": 80, "zIndex": 10, "visible": true, "backgroundColor": "#F8F9FA", "color": "#333333", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ヘッダー"
+      },
+      "logo-text-1": {
+        "id": "logo-text-1",
+        "type": "テキスト",
+        "parentId": "header-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 20, "y": 20, "width": 200, "height": 40, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#3f51b5", "fontSize": 28, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "企業ロゴ"
+      },
+      "nav-menu-1": {
+        "id": "nav-menu-1",
+        "type": "コンテナ",
+        "parentId": "header-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 900, "y": 20, "width": 360, "height": 40, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#333333", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ナビゲーション"
+      },
+      "hero-1": {
+        "id": "hero-1",
+        "type": "コンテナ",
+        "parentId": "artboard-1",
+        "children": ["hero-title-1", "hero-subtitle-1"],
+        "properties": {
+          "desktop": { "x": 0, "y": 80, "width": 1280, "height": 400, "zIndex": 1, "visible": true, "backgroundColor": "#E9ECEF", "color": "#333333", "fontSize": 16, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "ヒーローセクション"
+      },
+       "hero-title-1": {
+        "id": "hero-title-1",
+        "type": "テキスト",
+        "parentId": "hero-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 100, "y": 100, "width": 1080, "height": 80, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#212529", "fontSize": 48, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "革新的なソリューション"
+      },
+      "hero-subtitle-1": {
+        "id": "hero-subtitle-1",
+        "type": "テキスト",
+        "parentId": "hero-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 100, "y": 200, "width": 1080, "height": 40, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#495057", "fontSize": 24, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "未来を創造するテクノロジー"
+      },
+      "footer-1": {
+        "id": "footer-1",
+        "type": "コンテナ",
+        "parentId": "artboard-1",
+        "children": ["copyright-text-1"],
+        "properties": {
+          "desktop": { "x": 0, "y": 640, "width": 1280, "height": 80, "zIndex": 10, "visible": true, "backgroundColor": "#343A40", "color": "#FFFFFF", "fontSize": 14, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "フッター"
+      },
+      "copyright-text-1": {
+        "id": "copyright-text-1",
+        "type": "テキスト",
+        "parentId": "footer-1",
+        "children": [],
+        "properties": {
+          "desktop": { "x": 40, "y": 30, "width": 1200, "height": 20, "zIndex": 1, "visible": true, "backgroundColor": "transparent", "color": "#FFFFFF", "fontSize": 14, "borderRadius": 0 }
+        },
+        "locked": false,
+        "content": "© 2023 企業名. All rights reserved."
+      }
+    },
+    "customComponents": {},
+    "nextId": 10,
+    "selectedItemIds": [],
+    "currentView": "desktop",
+    "camera": { "x": 0, "y": 0, "zoom": 1 },
+    "assets": {},
+    "nextAssetId": 1
+  }
+}

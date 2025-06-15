@@ -405,317 +405,21 @@
     </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // --- テンプレート定義 ---
     const TEMPLATES = [
         {
             name: 'コーポレートサイト',
-            data: {
-                "items": {
-                    "item-1": {
-                        "id": "item-1",
-                        "type": "アートボード",
-                        "parentId": null,
-                        "children": ["item-2", "item-3", "item-4", "item-5", "item-6", "item-7"],
-                        "isArtboard": true,
-                        "artboardId": null,
-                        "deviceType": "desktop",
-                        "pageNumber": 1,
-                        "properties": {
-                            "desktop": {
-                                "x": 100,
-                                "y": 100,
-                                "width": 960,
-                                "height": 600,
-                                "zIndex": 0,
-                                "visible": true,
-                                "backgroundColor": "#FFFFFF",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "トップページ"
-                    },
-                    "item-2": {
-                        "id": "item-2",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 0,
-                                "width": 960,
-                                "height": 80,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#3f51b5",
-                                "color": "#FFFFFF",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "ヘッダー"
-                    },
-                    "item-3": {
-                        "id": "item-3",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 80,
-                                "width": 960,
-                                "height": 400,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#e3f2fd",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "ヒーローセクション"
-                    },
-                    "item-4": {
-                        "id": "item-4",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 480,
-                                "width": 960,
-                                "height": 300,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#FFFFFF",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "特徴セクション"
-                    },
-                    "item-5": {
-                        "id": "item-5",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 780,
-                                "width": 960,
-                                "height": 200,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#f5f5f5",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "お知らせセクション"
-                    },
-                    "item-6": {
-                        "id": "item-6",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 980,
-                                "width": 960,
-                                "height": 100,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#333333",
-                                "color": "#FFFFFF",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "フッター"
-                    },
-                    "item-7": {
-                        "id": "item-7",
-                        "type": "テキスト",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 20,
-                                "y": 20,
-                                "width": 200,
-                                "height": 40,
-                                "zIndex": 2,
-                                "visible": true,
-                                "backgroundColor": "transparent",
-                                "color": "#FFFFFF",
-                                "fontSize": 24,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "会社名"
-                    }
-                },
-                "customComponents": {},
-                "nextId": 8,
-                "selectedItemIds": [],
-                "currentView": "desktop",
-                "camera": {
-                    "x": 0,
-                    "y": 0,
-                    "zoom": 1
-                },
-                "assets": {},
-                "nextAssetId": 1
-            }
+            description: '一般的な企業サイトの基本レイアウトです。',
+            path: './templates/template-corporate.json',
+            preview: './templates/preview-corporate.png'
         },
         {
             name: 'ポートフォリオ',
-            data: {
-                "items": {
-                    "item-1": {
-                        "id": "item-1",
-                        "type": "アートボード",
-                        "parentId": null,
-                        "children": ["item-2", "item-3", "item-4", "item-5"],
-                        "isArtboard": true,
-                        "artboardId": null,
-                        "deviceType": "desktop",
-                        "pageNumber": 1,
-                        "properties": {
-                            "desktop": {
-                                "x": 100,
-                                "y": 100,
-                                "width": 960,
-                                "height": 800,
-                                "zIndex": 0,
-                                "visible": true,
-                                "backgroundColor": "#FFFFFF",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "ポートフォリオ"
-                    },
-                    "item-2": {
-                        "id": "item-2",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 0,
-                                "width": 960,
-                                "height": 80,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#212121",
-                                "color": "#FFFFFF",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "ヘッダー"
-                    },
-                    "item-3": {
-                        "id": "item-3",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 80,
-                                "width": 960,
-                                "height": 400,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#fafafa",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "作品グリッド"
-                    },
-                    "item-4": {
-                        "id": "item-4",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 480,
-                                "width": 960,
-                                "height": 300,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#FFFFFF",
-                                "color": "#000000",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "プロフィール"
-                    },
-                    "item-5": {
-                        "id": "item-5",
-                        "type": "コンテナ",
-                        "parentId": "item-1",
-                        "children": [],
-                        "properties": {
-                            "desktop": {
-                                "x": 0,
-                                "y": 780,
-                                "width": 960,
-                                "height": 100,
-                                "zIndex": 1,
-                                "visible": true,
-                                "backgroundColor": "#212121",
-                                "color": "#FFFFFF",
-                                "fontSize": 16,
-                                "borderRadius": 0
-                            }
-                        },
-                        "locked": false,
-                        "content": "フッター"
-                    }
-                },
-                "customComponents": {},
-                "nextId": 6,
-                "selectedItemIds": [],
-                "currentView": "desktop",
-                "camera": {
-                    "x": 0,
-                    "y": 0,
-                    "zoom": 1
-                },
-                "assets": {},
-                "nextAssetId": 1
-            }
-        }
+            description: 'クリエイター向けの作品展示用レイアウトです。',
+            path: './templates/template-portfolio.json',
+            preview: './templates/preview-portfolio.png'
+        },
     ];
 
     // --- DOM要素 ---
@@ -726,40 +430,98 @@ document.addEventListener('DOMContentLoaded', () => {
     const templateModal = document.getElementById('template-modal');
     const templateOptionsContainer = document.getElementById('template-options');
 
-    // モーダルにテンプレートの選択肢を生成
-    TEMPLATES.forEach(template => {
-        const card = document.createElement('div');
-        card.className = 'template-card';
-        card.dataset.templateIndex = TEMPLATES.indexOf(template);
-        
-        card.innerHTML = `
-            <div class="template-preview" style="background: #e9ebee; display: flex; align-items: center; justify-content: center;">
-                <span style="font-size: 24px; color: #666;">${template.name}</span>
-            </div>
-            <h4>${template.name}</h4>
-        `;
-        templateOptionsContainer.appendChild(card);
-    });
+    // --- テンプレート読み込みとモーダル初期化 ---
+    async function loadAndInitializeTemplates() {
+        try {
+            // TEMPLATES 配列の各要素に projectData を非同期で読み込む
+            for (const template of TEMPLATES) {
+                if (template.path) {
+                    try {
+                        const response = await fetch(template.path);
+                        if (!response.ok) {
+                            console.error(`Failed to load template project data from: ${template.path}`, response.statusText);
+                            template.projectData = null; // エラー時はnullを設定
+                            continue;
+                        }
+                        const projectJson = await response.json();
+                        // 読み込んだJSONオブジェクト全体をprojectDataとして格納
+                        template.projectData = projectJson;
+                    } catch (fetchError) {
+                        console.error(`Error fetching template data from ${template.path}:`, fetchError);
+                        template.projectData = null; // エラー時はnullを設定
+                    }
+                } else {
+                     template.projectData = null; // pathがない場合
+                }
+            }
+            initializeTemplateModal(); // データが読み込まれた後にモーダルを初期化
+        } catch (error) {
+            console.error("Error processing templates:", error);
+        }
+    }
 
-    // テンプレートカードのクリックイベント
+    function initializeTemplateModal() {
+        templateOptionsContainer.innerHTML = ''; // 既存のオプションをクリア
+
+        // 「白紙から開始」オプション
+        const blankCard = document.createElement('div');
+        blankCard.className = 'template-card';
+        blankCard.dataset.templateName = "blank"; // 特別な名前で識別
+        blankCard.innerHTML = `
+            <div class="template-preview" style="background: #e9ebee; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 48px; color: #ccc;">+</span>
+            </div>
+            <h4>白紙から開始</h4>
+            <p style="font-size: 0.8em; color: #666; padding: 0 15px 10px;">新しいプロジェクトを空のキャンバスで始めます。</p>
+        `;
+        templateOptionsContainer.appendChild(blankCard);
+
+        TEMPLATES.forEach(template => {
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            card.dataset.templateName = template.name;
+
+            // プレビュー画像の表示（ダミーまたは実際のパス）
+            const previewImage = template.preview ? `<img src="${template.preview}" alt="${template.name} preview" style="width:100%; height: 120px; object-fit:cover; background:#ccc;">` : `<div style="height: 120px; background: #e0e0e0; display:flex; align-items:center; justify-content:center; color:#999;">プレビューなし</div>`;
+
+            card.innerHTML = `
+                <div class="template-preview">${previewImage}</div>
+                <h4>${template.name}</h4>
+                <p style="font-size: 0.8em; color: #666; padding: 0 15px 10px;">${template.description || '説明はありません。'}</p>
+            `;
+            templateOptionsContainer.appendChild(card);
+        });
+    }
+
     templateOptionsContainer.addEventListener('click', (e) => {
         const card = e.target.closest('.template-card');
         if (!card) return;
 
-        const templateIndex = card.dataset.templateIndex;
+        const templateName = card.dataset.templateName;
 
-        if (templateIndex === undefined) {
-            // 「白紙から開始」が選ばれたら、モーダルを閉じるだけ
+        if (templateName === "blank") {
+            // state = getInitialState(); // 必要に応じて初期状態を定義・取得
+            // history = [JSON.stringify(state)];
+            // historyIndex = 0;
+            // renderAll();
+            // updateUndoRedoButtons();
+            // updateInspector();
             templateModal.style.display = 'none';
+            alert("白紙のプロジェクトを開始します。"); // TODO: 実際の初期化処理
         } else {
-            // テンプレートデータを直接使用
-            const templateData = JSON.stringify(TEMPLATES[templateIndex].data);
-            history = [templateData];
-            historyIndex = 0;
-            loadState(templateData);
-            
-            templateModal.style.display = 'none';
-            alert(`「${card.querySelector('h4').textContent}」テンプレートを読み込みました。`);
+            const selectedTemplate = TEMPLATES.find(t => t.name === templateName);
+            if (selectedTemplate && selectedTemplate.projectData) {
+                // projectData（オブジェクト）を直接 loadState に渡す
+                loadState(selectedTemplate.projectData);
+
+                templateModal.style.display = 'none';
+                alert(`「${selectedTemplate.name}」テンプレートを読み込みました。`);
+            } else if (selectedTemplate && !selectedTemplate.projectData) {
+                console.error(`Template "${templateName}" has no projectData loaded.`);
+                alert(`テンプレート「${templateName}」のプロジェクトデータの読み込みに失敗しました。`);
+            } else {
+                console.error("Selected template not found or projectData is missing:", templateName);
+            }
         }
     });
 
@@ -819,13 +581,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Undo/Redo機能 (v3から変更なし) ---
-    let history = [JSON.stringify(state)];
+    let history = [JSON.stringify(state)]; // 初期状態を文字列で保存
     let historyIndex = 0;
-    function saveState() { if (historyIndex < history.length - 1) { history.splice(historyIndex + 1); } history.push(JSON.stringify(state)); historyIndex = history.length - 1; updateUndoRedoButtons(); }
-    function undo() { if (historyIndex > 0) { historyIndex--; loadState(history[historyIndex]); } }
-    function redo() { if (historyIndex < history.length - 1) { historyIndex++; loadState(history[historyIndex]); } }
-    function loadState(jsonState) { state = JSON.parse(jsonState); renderAll(); updateUndoRedoButtons(); updateInspector(); renderComponentLibrary(); }
-    function updateUndoRedoButtons() { undoBtn.disabled = historyIndex === 0; redoBtn.disabled = historyIndex === history.length - 1; }
+
+    function saveState() {
+        if (historyIndex < history.length - 1) {
+            history.splice(historyIndex + 1);
+        }
+        // 常に現在のstateオブジェクトを文字列化してhistoryに保存
+        history.push(JSON.stringify(state));
+        historyIndex = history.length - 1;
+        updateUndoRedoButtons();
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            // historyから取り出すのは文字列なので、parseしてstateに設定
+            const previousStateString = history[historyIndex];
+            state = JSON.parse(previousStateString);
+            renderAll();
+            updateUndoRedoButtons();
+            updateInspector();
+            renderComponentLibrary();
+        }
+    }
+    function redo() {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            // historyから取り出すのは文字列なので、parseしてstateに設定
+            const nextStateString = history[historyIndex];
+            state = JSON.parse(nextStateString);
+            renderAll();
+            updateUndoRedoButtons();
+            updateInspector();
+            renderComponentLibrary();
+        }
+    }
+
+    // loadStateは文字列（undo/redo, ファイルロード時）またはオブジェクト（テンプレート選択時）を受け取る
+    function loadState(newStateData) {
+        if (typeof newStateData === 'string') {
+            try {
+                state = JSON.parse(newStateData);
+            } catch (e) {
+                console.error("Failed to parse state from JSON string:", e);
+                alert("プロジェクトデータの読み込みに失敗しました。形式が正しくありません。");
+                return; // パースに失敗したら処理を中断
+            }
+        } else if (typeof newStateData === 'object' && newStateData !== null) {
+            // テンプレートから読み込まれたオブジェクト、またはファイルから読み込まれパース済みのオブジェクト
+            state = deepClone(newStateData); // 念のためディープコピーして元のテンプレートオブジェクトを変更しないようにする
+        } else {
+            console.error("Invalid data type passed to loadState:", newStateData);
+            alert("プロジェクトデータの形式が予期せぬものです。");
+            return; // 不明な形式なら処理を中断
+        }
+
+        // historyには常に文字列化された完全な状態を記録する
+        // loadStateが呼び出された時点が新しい状態の起点となるため、historyを更新
+        history = [JSON.stringify(state)];
+        historyIndex = 0;
+
+        renderAll();
+        updateUndoRedoButtons();
+        updateInspector();
+        renderComponentLibrary();
+    }
+
+    function updateUndoRedoButtons() {
+        undoBtn.disabled = historyIndex === 0;
+        redoBtn.disabled = historyIndex === history.length - 1;
+    }
+
+    // 簡単なディープクローン関数（より堅牢なライブラリを使うことも検討）
+    function deepClone(obj) {
+        if (obj === null || typeof obj !== 'object') {
+            return obj;
+        }
+        // DateオブジェクトやRegExpオブジェクトなどの特殊なケースはここでは扱わない
+        if (obj instanceof Array) {
+            const copy = [];
+            for (let i = 0, len = obj.length; i < len; i++) {
+                copy[i] = deepClone(obj[i]);
+            }
+            return copy;
+        }
+        if (obj instanceof Object) {
+            const copy = {};
+            for (const attr in obj) {
+                if (obj.hasOwnProperty(attr)) {
+                    copy[attr] = deepClone(obj[attr]);
+                }
+            }
+            return copy;
+        }
+        throw new Error("Unable to copy obj! Its type isn't supported.");
+    }
+
     undoBtn.addEventListener('click', undo);
     redoBtn.addEventListener('click', redo);
 
@@ -1244,23 +1097,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleMouseMove(e) {
         if (!dragInfo.mode) return;
-        const dx = e.clientX - dragInfo.startX;
-        const dy = e.clientY - dragInfo.startY;
+
+        const dxOriginal = e.clientX - dragInfo.startX;
+        const dyOriginal = e.clientY - dragInfo.startY;
+
+        // マウス移動量をカメラのズーム率で補正
+        const dx = dxOriginal / state.camera.zoom;
+        const dy = dyOriginal / state.camera.zoom;
 
         if (dragInfo.mode === 'move') {
             dragInfo.initialItems.forEach(initialItem => {
                 const item = state.items[initialItem.id];
                 if (getItemProperty(item.id, 'locked')) return;
 
-                const parentOffset = item.parentId ? {
-                    x: getItemProperty(item.parentId, 'x'),
-                    y: getItemProperty(item.parentId, 'y')
-                } : { x: 0, y: 0 };
+                // Artboard内のアイテムの場合、親のArtboardの座標を考慮しない
+                // Artboard自体を動かす場合は、Artboardの座標のみ変更
+                let newX = initialItem.x + dx;
+                let newY = initialItem.y + dy;
 
-                let newX = initialItem.x + dx / state.camera.zoom - parentOffset.x;
-                let newY = initialItem.y + dy / state.camera.zoom - parentOffset.y;
-
-                if (!e.shiftKey) {
+                if (!e.shiftKey) { // Shiftキーが押されていない場合のみスナップ
                     newX = snapToGrid(newX);
                     newY = snapToGrid(newY);
                 }
@@ -1268,56 +1123,139 @@ document.addEventListener('DOMContentLoaded', () => {
                 setItemProperty(item.id, 'x', newX);
                 setItemProperty(item.id, 'y', newY);
 
-                if (item.isArtboard) {
-                    Object.values(state.items).forEach(otherItem => {
-                        if (otherItem.artboardId === item.id) {
-                            const otherX = getItemProperty(otherItem.id, 'x') + dx / state.camera.zoom;
-                            const otherY = getItemProperty(otherItem.id, 'y') + dy / state.camera.zoom;
-                            setItemProperty(otherItem.id, 'x', otherX);
-                            setItemProperty(otherItem.id, 'y', otherY);
+                // Artboardを移動する場合、その中の子要素も追従させる（相対位置は維持）
+                // ただし、子要素の座標はすでにワールド座標なので、差分だけを加える
+                if (item.isArtboard && item.children.length > 0) {
+                    const childDx = newX - initialItem.x; // Artboardの移動差分
+                    const childDy = newY - initialItem.y; // Artboardの移動差分
+
+                    item.children.forEach(childId => {
+                        const childItem = state.items[childId];
+                        if (childItem && !getItemProperty(childId, 'locked')) {
+                            // 子アイテムの元のワールド座標にArtboardの移動差分を加える
+                            // dragInfo.initialItems には子アイテムの情報がないため、現在の位置から計算
+                            // ただし、このループ内でsetItemPropertyを使うと、次のループに影響するので注意
+                            // → Artboardの移動が完了した後に、子要素の位置を更新するアプローチの方が安全
+                            // ここでは、Artboardの移動に合わせて、子要素の「初期位置」も更新されたと仮定して処理する
+                            // もしくは、子要素の移動は別途行う
+
+                            // この実装では、Artboardの移動時に子要素のx,yは変更しないでおき、
+                            // renderItemでArtboardの子を描画する際にArtboardのx,yをオフセットとして加算する
                         }
                     });
                 }
             });
             updateCanvasSize();
-            renderAll();
+            renderAll(); // renderAllで親子関係に基づいて再描画される
         } else if (dragInfo.mode === 'resize') {
-            const { initialBox, direction } = dragInfo;
-            let scaleX = 1, scaleY = 1, offsetX = 0, offsetY = 0;
+            const { initialBox, direction, initialItems } = dragInfo;
 
-            if (direction.includes('right')) scaleX = (initialBox.width + dx / state.camera.zoom) / initialBox.width;
-            if (direction.includes('left')) { scaleX = (initialBox.width - dx / state.camera.zoom) / initialBox.width; offsetX = dx / state.camera.zoom; }
-            if (direction.includes('bottom')) scaleY = (initialBox.height + dy / state.camera.zoom) / initialBox.height;
-            if (direction.includes('top')) { scaleY = (initialBox.height - dy / state.camera.zoom) / initialBox.height; offsetY = dy / state.camera.zoom; }
+            let newBoxX = initialBox.x;
+            let newBoxY = initialBox.y;
+            let newBoxWidth = initialBox.width;
+            let newBoxHeight = initialBox.height;
 
-            dragInfo.initialItems.forEach(initialItem => {
-                const item = state.items[initialItem.id];
+            if (direction.includes('right')) newBoxWidth = initialBox.width + dx;
+            if (direction.includes('left')) {
+                newBoxWidth = initialBox.width - dx;
+                newBoxX = initialBox.x + dx;
+            }
+            if (direction.includes('bottom')) newBoxHeight = initialBox.height + dy;
+            if (direction.includes('top')) {
+                newBoxHeight = initialBox.height - dy;
+                newBoxY = initialBox.y + dy;
+            }
+
+            // 最小サイズ制限 (例: 10px)
+            newBoxWidth = Math.max(10, newBoxWidth);
+            newBoxHeight = Math.max(10, newBoxHeight);
+
+            initialItems.forEach(initialSingleItem => {
+                const item = state.items[initialSingleItem.id];
                 if (getItemProperty(item.id, 'locked')) return;
 
-                const parentOffset = item.parentId ? {
-                    x: getItemProperty(item.parentId, 'x'),
-                    y: getItemProperty(item.parentId, 'y')
-                } : { x: 0, y: 0 };
+                let newX = getItemProperty(item.id, 'x'); // 元の値を保持
+                let newY = getItemProperty(item.id, 'y');   // 元の値を保持
+                let newWidth = getItemProperty(item.id, 'width'); // 元の値を保持
+                let newHeight = getItemProperty(item.id, 'height'); // 元の値を保持
 
-                const relX = initialItem.x - initialBox.x;
-                const relY = initialItem.y - initialBox.y;
+                const isArtboardResize = item.isArtboard;
 
-                let newX = initialBox.x + offsetX + relX * scaleX - parentOffset.x;
-                let newY = initialBox.y + offsetY + relY * scaleY - parentOffset.y;
-                let newWidth = initialItem.width * scaleX;
-                let newHeight = initialItem.height * scaleY;
+                if (isArtboardResize) {
+                    // --- アートボード専用のアスペクト比維持リサイズ ---
+                    const aspect = initialSingleItem.width / initialSingleItem.height;
+                    let widthChange = 0;
 
-                if (!e.shiftKey) {
-                    newX = snapToGrid(newX);
-                    newY = snapToGrid(newY);
-                    newWidth = snapToGrid(newWidth);
-                    newHeight = snapToGrid(newHeight);
+                    // dx, dy を使って対角線の変化量を推定する方が自然だが、
+                    // イシューの指示はdxベースのシンプルなものなので、それに従う。
+                    // 各リサイズ方向に応じて widthChange を決定
+                    if (direction === 'bottom-right' || direction === 'top-right') { // 右方向へのドラッグ
+                        widthChange = dx;
+                    } else if (direction === 'bottom-left' || direction === 'top-left') { // 左方向へのドラッグ
+                        widthChange = -dx;
+                    }
+                    // 縦方向のリサイズハンドルからの変更も考慮する場合は、dyもwidthChangeに影響させる
+                    // 例: if (direction.includes('top') || direction.includes('bottom')) { /* dy を使った widthChange の計算 */ }
+                    // ここでは簡単のため、横方向の変化を主とする
+
+                    newWidth = initialSingleItem.width + widthChange;
+                    newHeight = newWidth / aspect;
+
+                    // 位置調整
+                    newX = initialSingleItem.x; // 基本は元のX
+                    newY = initialSingleItem.y; // 基本は元のY
+
+                    if (direction.includes('left')) {
+                        newX = initialSingleItem.x - widthChange;
+                    }
+                    if (direction.includes('top')) {
+                        newY = initialSingleItem.y + (initialSingleItem.height - newHeight);
+                    }
+
+                } else {
+                    // --- 通常アイテムのリサイズロジック (グループリサイズも含む) ---
+                    // グループ全体を囲むボックス(newBoxX, newBoxY, newBoxWidth, newBoxHeight)を基準に変形
+                    const relativeX = initialSingleItem.x - initialBox.x;
+                    const relativeY = initialSingleItem.y - initialBox.y;
+
+                    const scaleX = newBoxWidth / initialBox.width;
+                    const scaleY = newBoxHeight / initialBox.height;
+
+                    newX = newBoxX + relativeX * scaleX;
+                    newY = newBoxY + relativeY * scaleY;
+                    newWidth = initialSingleItem.width * scaleX;
+                    newHeight = initialSingleItem.height * scaleY;
+
+                    // 通常アイテム単体の場合はShiftキーでアスペクト比維持
+                    if (initialItems.length === 1 && e.shiftKey) {
+                        const itemAspectRatio = initialSingleItem.width / initialSingleItem.height;
+                        // 幅の変化を基準にするか、高さの変化を基準にするか（より変化が大きい方を採用など）
+                        const potentialWidthBasedOnHeight = newHeight * itemAspectRatio;
+                        const potentialHeightBasedOnWidth = newWidth / itemAspectRatio;
+
+                        // どちらの変化が元の比率に近いかで調整（またはdx, dyの大きさで判断）
+                        if (Math.abs(newWidth - initialSingleItem.width) > Math.abs(newHeight - initialSingleItem.height) * itemAspectRatio) {
+                             // 幅の変化が主
+                            newHeight = potentialHeightBasedOnWidth;
+                        } else {
+                            // 高さの変化が主
+                            newWidth = potentialWidthBasedOnHeight;
+                        }
+
+                        // リサイズ方向に応じて位置を再調整 (特に左上からの場合)
+                        if (direction.includes('left')) {
+                            newX = (newBoxX + initialBox.width) - (relativeX * scaleX + newWidth);
+                        }
+                        if (direction.includes('top')) {
+                             newY = (newBoxY + initialBox.height) - (relativeY * scaleY + newHeight);
+                        }
+                    }
                 }
 
-                setItemProperty(item.id, 'x', newX);
-                setItemProperty(item.id, 'y', newY);
-                setItemProperty(item.id, 'width', newWidth);
-                setItemProperty(item.id, 'height', newHeight);
+                setItemProperty(item.id, 'x', Math.round(newX));
+                setItemProperty(item.id, 'y', Math.round(newY));
+                setItemProperty(item.id, 'width', Math.max(10, Math.round(newWidth))));
+                setItemProperty(item.id, 'height', Math.max(10, Math.round(newHeight))));
             });
             updateCanvasSize();
             renderAll();
@@ -2051,6 +1989,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // アートボードのページ番号管理
     let artboardPageCount = 0;
+
+    await loadAndInitializeTemplates(); // DOMContentLoadedの最後でテンプレートを読み込み・初期化
 });
 </script>
 </body>
