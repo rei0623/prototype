@@ -420,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         "isArtboard": true,
                         "artboardId": null,
                         "deviceType": "desktop",
+                        "selectedAspectRatio": "16:9", // デフォルトPCアスペクト比
                         "pageNumber": 1,
                         "properties": {
                             "desktop": {
@@ -436,9 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "トップページ"
+                        "content": "トップページ全体構成案",
+                        "designNotes": "- Webサイト全体のメインコンテナとなるアートボード。\n- 配色やフォントはブランディングに合わせて調整。",
+                        "functionalNotes": "- ページ遷移の基点。\n- レスポンシブ対応のブレークポイント設定が必要な場合はここに記述。"
                     },
-                    "item-2": {
+                    "item-2": { // ヘッダー
                         "id": "item-2",
                         "type": "コンテナ",
                         "parentId": "item-1",
@@ -447,8 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             "desktop": {
                                 "x": 0,
                                 "y": 0,
-                                "width": 960,
-                                "height": 80,
+                                "width": 960, // アートボード幅に合わせる
+                                "height": 60, // 適切な高さに調整
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#3f51b5",
@@ -458,19 +461,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "ヘッダー"
+                        "content": "サイト共通ヘッダーエリア",
+                        "designNotes": "- 企業ロゴと主要ナビゲーション（例：会社概要, 事業内容, お知らせ, お問い合わせ）を配置。\n- 配色はブランドカラーを基調とし、可読性の高いフォントを使用。\n- スクロールしても追従する固定ヘッダー（スティッキーヘッダー）の採用を検討。",
+                        "functionalNotes": "- ロゴ画像クリックでトップページ（このアートボード）の先頭へ戻る。\n- 各ナビゲーションリンクは、ページ内該当セクションへのスムーズスクロール、または関連する別ページへ遷移。"
                     },
-                    "item-3": {
+                    "item-3": { // ヒーローセクション
                         "id": "item-3",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: item-3-1 (キャッチコピー用テキスト), item-3-2 (背景画像)
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 80,
+                                "y": 60, // ヘッダーの下に配置
                                 "width": 960,
-                                "height": 400,
+                                "height": 200, // 適切な高さに調整
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#e3f2fd",
@@ -480,19 +485,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "ヒーローセクション"
+                        "content": "メインビジュアルエリア\nキャッチコピー: 【ここにサイトの主要なメッセージを記述】\nサブコピー: 【必要であれば補足情報を記述】\nCTAボタンテキスト: 【例: サービス詳細へ】",
+                        "designNotes": "- サイトの第一印象を決める重要なエリア。\n- インパクトのある画像や動画を背景に使用し、その上にキャッチコピーや主要なCTAボタンを配置。\n- キャッチコピーは簡潔で力強く、ターゲットユーザーに響くメッセージを。",
+                        "functionalNotes": "- CTAボタン（例：「詳しくはこちら」「資料請求」）は、関連ページへのリンクやお問い合わせフォームへの誘導を行う。"
                     },
-                    "item-4": {
+                    "item-4": { // 特徴セクション
                         "id": "item-4",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: 3つの特徴を示すコンテナを内包
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 480,
+                                "y": 260, // ヒーローセクションの下
                                 "width": 960,
-                                "height": 300,
+                                "height": 150, // 適切な高さに調整
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#FFFFFF",
@@ -502,19 +509,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "特徴セクション"
+                        "content": "サービス・製品の特徴\n特徴1: 【特徴1のタイトル】\n説明: 【特徴1の詳細説明】\n特徴2: 【特徴2のタイトル】\n説明: 【特徴2の詳細説明】",
+                        "designNotes": "- 企業の強みやサービスの特長を3〜4点に絞って簡潔に紹介。\n- 各特徴にはアイコンやイラストを添えて視覚的に分かりやすく。\n- レイアウトはグリッドシステムを利用し、均等に配置。",
+                        "functionalNotes": "- 各特徴項目から、より詳細な説明ページへのリンクを設置することも検討。"
                     },
-                    "item-5": {
+                    "item-5": { // お知らせセクション
                         "id": "item-5",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: お知らせリストを表示するコンテナ
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 780,
+                                "y": 410, // 特徴セクションの下
                                 "width": 960,
-                                "height": 200,
+                                "height": 130, // 適切な高さに調整
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#f5f5f5",
@@ -524,19 +533,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "お知らせセクション"
+                        "content": "最新情報・お知らせ\n- YYYY/MM/DD 【お知らせタイトル1】\n- YYYY/MM/DD 【お知らせタイトル2】",
+                        "designNotes": "- 最新情報をリスト形式で表示。日付、タイトル、概要など。\n- 「もっと見る」ボタンを配置して、お知らせ一覧ページへの導線も確保。\n- スッキリとしたデザインで、情報が読みやすいように配慮。",
+                        "functionalNotes": "- 各お知らせタイトルクリックでお知らせ詳細ページへ遷移。\n- 「もっと見る」ボタンでお知らせ一覧ページへ遷移。"
                     },
-                    "item-6": {
+                    "item-6": { // フッター
                         "id": "item-6",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: コピーライトテキスト、フッターナビゲーション
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 980,
+                                "y": 540, // お知らせセクションの下、アートボードの最下部に近い位置
                                 "width": 960,
-                                "height": 100,
+                                "height": 60, // 適切な高さに調整
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#333333",
@@ -546,29 +557,33 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "フッター"
+                        "content": "サイト共通フッターエリア\nコピーライト: © 【発行年】 【会社名】. All Rights Reserved.\nプライバシーポリシーへのリンクテキスト: 【プライバシーポリシー】",
+                        "designNotes": "- コピーライト情報、プライバシーポリシーへのリンク、サイトマップなどを配置。\n- 背景色はダーク系で落ち着いた印象に。文字色は白や明るいグレーで見やすく。\n- シンプルで整理されたレイアウト。",
+                        "functionalNotes": "- 各種法的情報ページへのリンクを設置。"
                     },
-                    "item-7": {
+                    "item-7": { // 会社名テキスト (ヘッダー内)
                         "id": "item-7",
                         "type": "テキスト",
-                        "parentId": "item-1",
+                        "parentId": "item-1", // 本来は item-2 (ヘッダー) の子になるべきだが、現状の構造を維持
                         "children": [],
                         "properties": {
                             "desktop": {
                                 "x": 20,
-                                "y": 20,
+                                "y": 15, // ヘッダー中央付近になるように調整
                                 "width": 200,
-                                "height": 40,
-                                "zIndex": 2,
+                                "height": 30, // ヘッダー中央付近になるように調整
+                                "zIndex": 2, // ヘッダー(item-2)より手前に表示
                                 "visible": true,
                                 "backgroundColor": "transparent",
-                                "color": "#FFFFFF",
+                                "color": "#FFFFFF", // ヘッダーの背景色に合わせた色
                                 "fontSize": 24,
                                 "borderRadius": 0
                             }
                         },
                         "locked": false,
-                        "content": "会社名"
+                        "content": "【企業ロゴ または 会社名】",
+                        "designNotes": "- ヘッダー左上に配置される企業名またはロゴのテキスト表現。\n- フォントは企業のブランドイメージに合ったものを選択。\n- 画像ロゴがある場合は、このテキスト要素を画像要素に置き換えることを推奨。",
+                        "functionalNotes": "- クリックでトップページ（item-1）の先頭に戻る。"
                     }
                 },
                 "customComponents": {},
@@ -596,6 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         "isArtboard": true,
                         "artboardId": null,
                         "deviceType": "desktop",
+                        "selectedAspectRatio": "16:9", // デフォルトPCアスペクト比
                         "pageNumber": 1,
                         "properties": {
                             "desktop": {
@@ -612,19 +628,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "ポートフォリオ"
+                        "content": "ポートフォリオサイト構成案",
+                        "designNotes": "- クリエイターの作品を紹介するためのメインアートボード。\n- 全体的にミニマルで洗練されたデザインを目指す。\n- 作品が主役となるよう、余白を効果的に使用する。",
+                        "functionalNotes": "- 読み込み速度を考慮し、画像の最適化を行う。"
                     },
-                    "item-2": {
+                    "item-2": { // ヘッダー
                         "id": "item-2",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: ロゴ(テキストor画像), ナビゲーション(作品, プロフィール, コンタクトなど)
                         "properties": {
                             "desktop": {
                                 "x": 0,
                                 "y": 0,
                                 "width": 960,
-                                "height": 80,
+                                "height": 60,
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#212121",
@@ -634,19 +652,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "ヘッダー"
+                        "content": "ポートフォリオヘッダー\n【氏名 または ブランド名】\nナビゲーション: 【例: ホーム | 作品 | プロフィール | コンタクト】",
+                        "designNotes": "- ポートフォリオのタイトルや作者名を配置。\n- ナビゲーションはシンプルに「Works」「About」「Contact」など。\n- ダーク系の背景で、コンテンツエリアとのコントラストを明確に。",
+                        "functionalNotes": "- ロゴ/タイトルクリックでトップページ（このアートボード）に戻る。\n- 各ナビゲーションリンクは該当セクションへのスムーズスクロール、または別ページへ遷移。"
                     },
-                    "item-3": {
+                    "item-3": { // 作品グリッド
                         "id": "item-3",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: 個々の作品サムネイルアイテムを複数配置
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 80,
+                                "y": 60, // ヘッダーの下
                                 "width": 960,
-                                "height": 400,
+                                "height": 450, // 作品を並べるのに十分な高さ
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#fafafa",
@@ -656,19 +676,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "作品グリッド"
+                        "content": "制作実績一覧\n（ここに各作品のサムネイルとタイトルが並ぶイメージ）\n作品1: 【作品タイトル1】\n作品2: 【作品タイトル2】",
+                        "designNotes": "- 各作品のサムネイル画像をタイル状に配置（例: 3列グリッド）。\n- マウスオーバーで作品タイトルや短い説明を表示するインタラクションを検討。\n- レスポンシブ対応で、画面幅に応じて列数を調整（例: スマホでは1列）。\n- 作品間の余白を均等にし、視覚的な整理を。",
+                        "functionalNotes": "- 各サムネイルクリックで作品詳細ページ（モーダル表示または別ページ）へ遷移。\n- カテゴリーフィルタリング機能の追加も検討（例: Webデザイン, イラスト, 写真など）。"
                     },
-                    "item-4": {
+                    "item-4": { // プロフィール
                         "id": "item-4",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: プロフィール写真(画像), 自己紹介文(テキスト), スキルリスト(テキスト)
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 480,
+                                "y": 510, // 作品グリッドの下 (60 + 450)
                                 "width": 960,
-                                "height": 300,
+                                "height": 230, // アートボードの高さ800に合わせるための残り
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#FFFFFF",
@@ -678,19 +700,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "プロフィール"
+                        "content": "自己紹介・経歴\n氏名: 【あなたの氏名】\n経歴: 【最終学歴、職務経歴などを記述】\nスキル: 【保有スキル、得意分野などを記述】\n連絡先ボタンテキスト: 【例: お仕事の依頼はこちら】",
+                        "designNotes": "- 作者の顔写真またはアバター画像を配置。\n- 自己紹介文は簡潔かつ魅力的に。\n- スキルや経歴などをリスト形式で分かりやすく表示。\n- SNSリンクや連絡先情報も掲載。",
+                        "functionalNotes": "- 「お問い合わせ」ボタンを設置し、コンタクトフォームやメールリンクへ誘導。"
                     },
-                    "item-5": {
+                    "item-5": { // フッター
                         "id": "item-5",
                         "type": "コンテナ",
                         "parentId": "item-1",
-                        "children": [],
+                        "children": [], // 例: コピーライトテキスト
                         "properties": {
                             "desktop": {
                                 "x": 0,
-                                "y": 780,
+                                "y": 740, // プロフィールの下 (510 + 230)
                                 "width": 960,
-                                "height": 100,
+                                "height": 60, // アートボードの最下部に配置
                                 "zIndex": 1,
                                 "visible": true,
                                 "backgroundColor": "#212121",
@@ -700,7 +724,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         "locked": false,
-                        "content": "フッター"
+                        "content": "ポートフォリオフッター\n© 【発行年】 【氏名 または ブランド名】. All Rights Reserved.",
+                        "designNotes": "- コピーライト情報を表示。\n- ヘッダーと同様にダーク系の背景で統一感を出す。\n- 必要であれば、小規模なナビゲーションやSNSリンクを再度配置。",
+                        "functionalNotes": "- 特になし。表示が主目的。"
                     }
                 },
                 "customComponents": {},
@@ -777,6 +803,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         assets: {},
         nextAssetId: 1,
+        llmPromptHints: {
+            introduction: "これはWebサイトの構造と各要素のデザイン・機能に関する指示を含むJSONデータです。このデータを解釈し、提案書作成やHTML生成などのタスクに活用してください。",
+            notesInterpretation: "`items`内の各要素にある `designNotes` はUI/UXデザインやレイアウトに関する指示やアイデアを記述します。`functionalNotes` は各要素が持つべき機能、インタラクション、データ連携などに関する指示やアイデアを記述します。これらのノートはMarkdown形式で記述されていることがあります。",
+            structureOverview: "`items`が主要な要素の集まりです。各要素は`id`, `type`, `parentId`, `children`で階層構造を示し、`properties`内に具体的なスタイリング情報が格納されます。`selectedAspectRatio`はアートボードの固定アスペクト比を示します。"
+        }
     };
     let clipboard = []; // コピペ用
     
@@ -1123,6 +1154,9 @@ document.addEventListener('DOMContentLoaded', () => {
             options.width = preset.width;
             options.height = preset.height;
             options.content = `${preset.name} - Page ${artboardPageCount}`;
+            // デフォルトのアスペクト比を設定
+            const defaultAspectRatio = preset.aspectRatios.find(ar => ar.default);
+            options.selectedAspectRatio = defaultAspectRatio ? defaultAspectRatio.aspectRatio : "free";
         }
         
         state.items[id] = {
@@ -1134,6 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             artboardId: isArtboard ? null : options.artboardId || null,
             deviceType: isArtboard ? options.deviceType : null,
             pageNumber: isArtboard ? artboardPageCount : null,
+            selectedAspectRatio: isArtboard ? options.selectedAspectRatio : null, // アートボードのみに設定
             properties: {
                 desktop: {
                     x: Math.round(x),
@@ -1307,6 +1342,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 let newWidth = initialItem.width * scaleX;
                 let newHeight = initialItem.height * scaleY;
 
+                // アスペクト比固定処理 (リサイズハンドル操作時)
+                if (state.selectedItemIds.length === 1) { // 単一選択時のみ
+                    const selectedItem = state.items[state.selectedItemIds[0]];
+                    if (selectedItem.isArtboard && selectedItem.selectedAspectRatio && selectedItem.selectedAspectRatio !== "free") {
+                        const [arW, arH] = selectedItem.selectedAspectRatio.split(':').map(Number);
+                        if (direction.includes('left') || direction.includes('right')) { // 横方向のリサイズ
+                            if (initialItem.width * scaleX > 0) { // 幅が0以下にならないように
+                                newHeight = (initialItem.width * scaleX / arW) * arH;
+                                if (direction.includes('top')) {
+                                    offsetY = (initialItem.height - newHeight) / state.camera.zoom;
+                                }
+                            }
+                        } else if (direction.includes('top') || direction.includes('bottom')) { // 縦方向のリサイズ
+                             if (initialItem.height * scaleY > 0) { // 高さが0以下にならないように
+                                newWidth = (initialItem.height * scaleY / arH) * arW;
+                                if (direction.includes('left')) {
+                                    offsetX = (initialItem.width - newWidth) / state.camera.zoom;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
                 if (!e.shiftKey) {
                     newX = snapToGrid(newX);
                     newY = snapToGrid(newY);
@@ -1403,6 +1462,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             </select>
                         </div>
                     </div>
+                    ${item.isArtboard ? `
+                    <div class="prop-item">
+                        <label>Aspect Ratio</label>
+                        <select data-prop="selectedAspectRatio">
+                            ${DEVICE_PRESETS[item.deviceType].aspectRatios.map(ar => `
+                                <option value="${ar.aspectRatio}" ${item.selectedAspectRatio === ar.aspectRatio ? 'selected' : ''}>
+                                    ${ar.aspectRatioLabel}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="prop-group">
                     <h5>Appearance</h5>
@@ -1439,14 +1510,36 @@ document.addEventListener('DOMContentLoaded', () => {
                         const value = inspectorContent.querySelector('[data-prop="widthValue"]').value;
                         const unit = inspectorContent.querySelector('[data-prop="widthUnit"]').value;
                         setItemProperty(item.id, 'width', `${value}${unit}`);
+                        // アスペクト比固定処理 (幅変更時)
+                        if (item.isArtboard && item.selectedAspectRatio && item.selectedAspectRatio !== "free") {
+                            const [arW, arH] = item.selectedAspectRatio.split(':').map(Number);
+                            const newHeight = (parseFloat(value) / arW) * arH;
+                            setItemProperty(item.id, 'height', `${newHeight}${unit}`); // 単位は幅に合わせる
+                        }
                     } else if (prop === 'heightValue' || prop === 'heightUnit') {
                         const value = inspectorContent.querySelector('[data-prop="heightValue"]').value;
                         const unit = inspectorContent.querySelector('[data-prop="heightUnit"]').value;
                         setItemProperty(item.id, 'height', `${value}${unit}`);
+                        // アスペクト比固定処理 (高さ変更時)
+                        if (item.isArtboard && item.selectedAspectRatio && item.selectedAspectRatio !== "free") {
+                            const [arW, arH] = item.selectedAspectRatio.split(':').map(Number);
+                            const newWidth = (parseFloat(value) / arH) * arW;
+                            setItemProperty(item.id, 'width', `${newWidth}${unit}`); // 単位は高さに合わせる
+                        }
+                    } else if (prop === 'selectedAspectRatio') {
+                        item.selectedAspectRatio = e.target.value; // selectedAspectRatioを直接更新
+                        if (item.selectedAspectRatio !== "free") {
+                            const currentHeight = parseUnit(getItemProperty(item.id, 'height')).value;
+                            const currentHeightUnit = parseUnit(getItemProperty(item.id, 'height')).unit;
+                            const [arW, arH] = item.selectedAspectRatio.split(':').map(Number);
+                            const newWidth = (currentHeight / arH) * arW;
+                            setItemProperty(item.id, 'width', `${newWidth}${currentHeightUnit}`);
+                        }
                     } else {
                         const value = e.target.type === 'number' ? parseFloat(e.target.value) : e.target.value;
                         setItemProperty(item.id, prop, value);
                     }
+                    updateInspector(); // アスペクト比変更後にインスペクターを再描画
                     renderAll();
                 });
                 input.addEventListener('change', saveState);
@@ -2040,12 +2133,22 @@ document.addEventListener('DOMContentLoaded', () => {
         desktop: {
             width: 960,
             height: 600,
-            name: 'PC'
+            name: 'PC',
+            aspectRatios: [
+                { aspectRatio: "16:9", aspectRatioLabel: "16:9 (標準)", default: true },
+                { aspectRatio: "4:3", aspectRatioLabel: "4:3 (従来)" },
+                { aspectRatio: "free", aspectRatioLabel: "自由比率" }
+            ]
         },
         mobile: {
             width: 320,
             height: 568,
-            name: 'スマホ'
+            name: 'スマホ',
+            aspectRatios: [
+                { aspectRatio: "9:16", aspectRatioLabel: "9:16 (縦長)", default: true },
+                { aspectRatio: "3:4", aspectRatioLabel: "3:4 (従来)" },
+                { aspectRatio: "free", aspectRatioLabel: "自由比率" }
+            ]
         }
     };
 
